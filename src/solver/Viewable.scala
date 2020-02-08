@@ -8,7 +8,7 @@ trait Viewable {
   protected var guiConflClause: Int = -1
   protected var guiDecisionLevel: Int = -1
 
-  def guiInit(instance: Instance, doInitialUnitProp: Boolean): Unit
+  def initSolverForGUI(instance: Instance, doInitialUnitProp: Boolean): Unit
 
   //Post: tornem l'accio que ha realitzat el solver
   def guiSolveStep: Int

@@ -25,7 +25,7 @@ import static util.Constants.*;
 
 public class MainGUI extends JFrame{
 
-    static String VERSION = "0.314159";
+    static final String VERSION = "0.3141592";
 
     public MainGUI() { //parametres; arxiu cnf inicial, solver, [triar vars de decisio manualment, single unitprops, multiples solucions]
         super("SAT-IT");
@@ -56,29 +56,37 @@ public class MainGUI extends JFrame{
     boolean testCopiaFeta = false;
     int specCount;
 
-    //Ull, aixo s'executa CADA VEGADA que "reiniciem" la GUI, no nomes el primer cop
+    //Aixo s'ha de cridar NOMES una vegada (quan inicialitzem la gui)
     private void initGUI(Instance instance){
+        initComponents();
+        setEventHandlers();
+        addStylesToDocument(textPaneTrail.getStyledDocument());
+
+        loadInstance(instance);
+    }
+
+    private void loadInstance(Instance instance){
+        //Netejar GUI
+        textPaneTrail.setText("");
+        ((DefaultListModel<Event>) listEvents.getModel()).clear();
+        ((DefaultListModel<Clause>) listClauses.getModel()).clear();
+
+        //Inicialitzar variables
         solver = newSolver();
         if(manualDecision) solver.setDecisionCallback(manualDecisionCallback);
-        initComponents();
-
-        lastInstance = instance;
         oldTrailLength = 0;
-        //manualDecision = false; //fer que es conservi al canviar d'instancia es mes dificil que canviar aixo
-
+        lastInstance = instance;
         instanceLoaded = instance.numVariables() != 0;
         TWLsolver = solver instanceof TwoWatchedLiteralSolver;
         boolean doInitialUnitProp = !(solver instanceof Backtracking);
 
-        solver.guiInit(instance, doInitialUnitProp);
+        solver.initSolverForGUI(instance, doInitialUnitProp);
 
-        if(!TWLsolver){
+        //Desactivar boto Unit Propagation si el solver es backtracking
+        if(!TWLsolver)
             btnUnitProp.setEnabled(false);
-            //btnConflict.setEnabled(false);
-        }
-
-        setEventHandlers();
-        addStylesToDocument(textPaneTrail.getStyledDocument());
+        else
+            btnUnitProp.setEnabled(true);
 
         try{
             updateTrail();
@@ -89,8 +97,9 @@ public class MainGUI extends JFrame{
         catch(Exception e){e.printStackTrace();}
     }
 
+    //Netejar i reiniciar la instancia actual
     void resetGUI(){
-        initGUI(lastInstance);
+        loadInstance(lastInstance);
     }
 
     private void setEventHandlers(){
@@ -155,7 +164,6 @@ public class MainGUI extends JFrame{
 
     private void initComponents(){
         GridBagConstraints c;
-        if(jPanel!=null) remove(jPanel); //FIXME: aixo no ho neteja tot
         jPanel = new JPanel(new GridBagLayout());
 
         // Regions principals
@@ -309,7 +317,7 @@ public class MainGUI extends JFrame{
                 if(loadInstance){
                     Instance instance = new Instance();
                     instance.readDimacs(file);
-                    initGUI(instance);
+                    loadInstance(instance);
                 }
             }
         });
@@ -356,7 +364,7 @@ public class MainGUI extends JFrame{
     private final DecisionCallback manualDecisionCallback = () -> { //potser hauriem de passar el solver com a parametre?
         String response;
         int literal = 0, automaticResponse = this.solver.initialMakeDecision(); //no tinc ni la mes remota idea de perque s'ha de posar el this...
-        updateClauses();
+        updateClauses(); //per tenir les clausules act. al moment de decidir. testejar
         boolean decisionMade = false;
         while(!decisionMade){
             boolean error = false;
