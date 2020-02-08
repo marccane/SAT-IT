@@ -71,11 +71,11 @@ class EventHandler {
                 //debugPrintSolverAction(solverAction);
 
                 if(solverAction == SOLVER_END)
-                    solverShowResult(solver);
+                    solverShowResult(solver, mainGUI.getjPanel());
             }
             while(bc.stopOnEvents(solverAction));
         }
-        else solverShowResult(solver);
+        else solverShowResult(solver, mainGUI.getjPanel());
         mainGUI.updateGUI();
     }
 
@@ -105,13 +105,14 @@ class EventHandler {
         }
     }
 
-    private static void solverShowResult(Solver solver){
+    private static void solverShowResult(Solver solver, JPanel jpanel){
         Tuple3 tuple3 = solver.eventManager().getStatistics();
         int decisions = (int)tuple3._1();
         int propagations = (int)tuple3._2();
         int conflicts = (int)tuple3._3();
-        JOptionPane.showMessageDialog(null, (solver.solverState()==SolvingState.SAT()?"SAT":"UNSAT") +
-                "\n\nDecisions: " + decisions + "\nPropagations: " + propagations + "\nConflicts: " + conflicts);
+        JOptionPane.showMessageDialog(jpanel, (solver.solverState()==SolvingState.SAT()?"SAT":"UNSAT") +
+                "\n\nDecisions: " + decisions + "\nPropagations: " + propagations + "\nConflicts: " + conflicts,
+                "Summary", JOptionPane.INFORMATION_MESSAGE);
     }
 
 }

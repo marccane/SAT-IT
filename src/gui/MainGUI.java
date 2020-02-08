@@ -534,6 +534,10 @@ public class MainGUI extends JFrame{
         }
     }
 
+    public JPanel getjPanel(){
+        return jPanel;
+    }
+
     private ViewableSolver newSolver(){
         if(solverType==SolverType.CDCL)
             return new CDCL();
