@@ -35,7 +35,7 @@ public class SolverSelectorWindow extends JFrame {
         btnSave.addActionListener(stub -> {
             boolean loadInstance = true;
             if(mainGUI.instanceLoaded){
-                int confirmed = JOptionPane.showConfirmDialog(null,
+                int confirmed = JOptionPane.showConfirmDialog(this,
                         MainGUI.confirmResetMessage, "Confirmation",
                         JOptionPane.YES_NO_OPTION);
 

@@ -117,7 +117,7 @@ public class MainGUI extends JFrame{
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 if(instanceLoaded) {
-                    int confirmed = JOptionPane.showConfirmDialog(null,
+                    int confirmed = JOptionPane.showConfirmDialog(jPanel,
                             "Are you sure you want to exit the program?", "Confirmation",
                             JOptionPane.YES_NO_OPTION);
 
@@ -307,7 +307,7 @@ public class MainGUI extends JFrame{
             if(returnVal == JFileChooser.APPROVE_OPTION){
                 File file = jfc.getSelectedFile();
                 if(instanceLoaded){
-                    int confirmed = JOptionPane.showConfirmDialog(null,
+                    int confirmed = JOptionPane.showConfirmDialog(jPanel,
                             confirmResetMessage, "Confirmation", JOptionPane.YES_NO_OPTION);
 
                     if(confirmed == JOptionPane.NO_OPTION)
@@ -322,10 +322,21 @@ public class MainGUI extends JFrame{
             }
         });
 
+        JMenuItem resetMenuItem = new JMenuItem("Reset");
+        resetMenuItem.addActionListener(stub -> {
+                    int confirmed = JOptionPane.showConfirmDialog(jPanel, confirmResetMessage, "Confirmation",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirmed == JOptionPane.YES_OPTION)
+                        resetGUI();
+                }
+        );
+
         JMenuItem exitMenuItem = new JMenuItem("Exit");
         exitMenuItem.addActionListener(stub -> dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
         fileMenu.add(openMenuItem);
+        fileMenu.add(resetMenuItem);
         fileMenu.addSeparator();
         fileMenu.add(exitMenuItem);
 
