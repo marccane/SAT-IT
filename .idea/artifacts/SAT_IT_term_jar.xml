@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SAT-IT_term:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SAT_IT_term_jar</output-path>
+    <root id="archive" name="SAT-IT_term.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/meta/metaTerm/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="SAT-IT" />
+      <element id="extracted-dir" path="$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.8.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
