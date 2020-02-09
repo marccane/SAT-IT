@@ -2,9 +2,6 @@
   <artifact type="jar" name="SAT-IT:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/SAT_IT_jar</output-path>
     <root id="archive" name="SAT-IT.jar">
-      <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/meta/metaTest/META-INF/MANIFEST.MF" />
-      </element>
       <element id="module-output" name="SAT-IT" />
       <element id="extracted-dir" path="/usr/local/share/scala/lib/scala-library.jar" path-in-jar="/" />
     </root>

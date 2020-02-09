@@ -33,7 +33,7 @@ object testEntrypoint {
       println("Fitxer llegit")
       println()
 
-      jarEntrypointTerminal.solvePrint(dimacs, solver, mostrarEvents)
+      jarEntrypoint.solvePrint(dimacs, solver, mostrarEvents)
     }
   }
 
@@ -46,7 +46,7 @@ object testEntrypoint {
       println("Executant " + file.getName)
       instance.readDimacs(file)
       try{
-        jarEntrypointTerminal.solvePrint(instance, solver, mostrarEvents)
+        jarEntrypoint.solvePrint(instance, solver, mostrarEvents)
       }
       catch{
         case e: Exception => e.printStackTrace()
