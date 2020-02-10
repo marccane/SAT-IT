@@ -17,6 +17,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import static gui.EventHandler.*;
@@ -27,7 +28,7 @@ public class MainGUI extends JFrame{
 
     static final String VERSION = "0.3141592";
 
-    public MainGUI() { //parametres; arxiu cnf inicial, solver, [triar vars de decisio manualment, single unitprops, multiples solucions]
+    public MainGUI() {
         super("SAT-IT");
         handleParametersAndInit("", null);
     }
@@ -307,7 +308,7 @@ public class MainGUI extends JFrame{
             if(returnVal == JFileChooser.APPROVE_OPTION){
                 File file = jfc.getSelectedFile();
                 if(instanceLoaded){
-                    int confirmed = JOptionPane.showConfirmDialog(jPanel,
+                    int confirmed = JOptionPane.showConfirmDialog(this,
                             confirmResetMessage, "Confirmation", JOptionPane.YES_NO_OPTION);
 
                     if(confirmed == JOptionPane.NO_OPTION)
@@ -324,7 +325,7 @@ public class MainGUI extends JFrame{
 
         JMenuItem resetMenuItem = new JMenuItem("Reset");
         resetMenuItem.addActionListener(stub -> {
-                    int confirmed = JOptionPane.showConfirmDialog(jPanel, confirmResetMessage, "Confirmation",
+                    int confirmed = JOptionPane.showConfirmDialog(this, confirmResetMessage, "Confirmation",
                             JOptionPane.YES_NO_OPTION);
 
                     if (confirmed == JOptionPane.YES_OPTION)
@@ -361,6 +362,12 @@ public class MainGUI extends JFrame{
         optionsMenu.add(manualDecisionsCheckBoxMenuItem);
 
         JMenu helpMenu = new JMenu("Help");
+        JMenuItem cliMenuItem = new JMenuItem("CLI");
+
+        cliMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
+                "Run this executable with\njava -jar SAT-IT.jar -h\nto find more about the command line interface ",
+                "CLI", JOptionPane.INFORMATION_MESSAGE));
+        helpMenu.add(cliMenuItem);
         JMenuItem aboutMenuItem = new JMenuItem("About");
         aboutMenuItem.addActionListener(stub -> new AboutDialogWindow());
         helpMenu.add(aboutMenuItem);
