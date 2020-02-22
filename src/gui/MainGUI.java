@@ -494,7 +494,7 @@ public class MainGUI extends JFrame{
             if (propagator == -5) { //backtrack
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("backtrackLiteral"));
                 doc.insertString(doc.getLength(), "BK", doc.getStyle("superscript"));
-            } else if (propagator == -2) { //unitpropinicialaa
+            } else if (propagator == -2) { //unitpropinicial
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("propagationLiteral"));
                 doc.insertString(doc.getLength(), "UP", doc.getStyle("superscript"));
             } else if (propagator < 0) { //decisio

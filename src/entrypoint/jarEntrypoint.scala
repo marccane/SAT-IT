@@ -10,8 +10,8 @@ object jarEntrypoint {
     val argc = args.length
     if(argc == 0) //GUI mode sense fitxer
       new MainGUI()
-    else if(args(0) == "-t"){ //terminal mode
-      handleTerminalArguments(args)
+    else if(args(0) == "-cli" || args(0) == "-c"){ //CLI mode
+      handleCLIArguments(args)
     }
     else if(args(0) == "-h" || args(0) == "--help")
       showHelp
@@ -25,7 +25,7 @@ object jarEntrypoint {
     }
   }
 
-  def handleTerminalArguments(args: Array[String]): Unit ={
+  def handleCLIArguments(args: Array[String]): Unit ={
     val argc = args.length
     var error = false
     var filename: String = null
@@ -34,7 +34,7 @@ object jarEntrypoint {
 
     if(argc == 1){
       error = true
-      Console.err.println("ERROR: file is required for terminal mode")
+      Console.err.println("ERROR: file is required for CLI mode")
       println
       showHelp
     }
@@ -102,7 +102,7 @@ object jarEntrypoint {
   def showHelp: Unit ={
     println("Usage:")
     println("   -GUI mode:  java -jar SAT-IT.jar [input-file]")
-    println("   -CLI mode:  java -jar SAT-IT.jar -t <input-file> [CLI-options]")
+    println("   -CLI mode:  java -jar SAT-IT.jar -cli <input-file> [CLI-options]")
     println
     println("  where input-file is a DIMACS CNF file.")
     println
