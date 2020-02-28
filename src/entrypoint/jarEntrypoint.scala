@@ -101,8 +101,8 @@ object jarEntrypoint {
 
   def showHelp: Unit ={
     println("Usage:")
-    println("   -GUI mode:  java -jar SAT-IT.jar [input-file]")
-    println("   -CLI mode:  java -jar SAT-IT.jar -cli <input-file> [CLI-options]")
+    println("   GUI mode:  java -jar SAT-IT.jar [input-file]")
+    println("   CLI mode:  java -jar SAT-IT.jar -cli <input-file> [CLI-options]")
     println
     println("  where input-file is a DIMACS CNF file.")
     println

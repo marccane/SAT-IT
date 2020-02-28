@@ -426,7 +426,7 @@ public class MainGUI extends JFrame{
     };
 
     int solverStep() {
-        int solverAction = solver. guiSolveStep();
+        int solverAction = solver.guiSolveStep();
         int actualTrailLength = solver.trail().length();
         StyledDocument doc = textPaneTrail.getStyledDocument();
 
@@ -539,6 +539,7 @@ public class MainGUI extends JFrame{
         DefaultListModel<Event> lmEvents = (DefaultListModel<Event>) listEvents.getModel();
         lmEvents.clear();
         while(eventIt.hasNext()) lmEvents.addElement(eventIt.next());
+        listEvents.ensureIndexIsVisible(lmEvents.size()-1); //autoscroll a l'ultim event cada cop que n'afegim un
     }
 
     void updateGUI(){
@@ -555,8 +556,12 @@ public class MainGUI extends JFrame{
         }
     }
 
-    public JPanel getjPanel(){
+    JPanel getjPanel(){
         return jPanel;
+    }
+    
+    void focusOnConflictClause(){
+        listClauses.ensureIndexIsVisible(solver.guiConflClause());
     }
 
     private ViewableSolver newSolver(){
@@ -573,7 +578,7 @@ public class MainGUI extends JFrame{
         this.solverType = solverType;
     }
 
-    //EventList/listEvents renderer
+    //EventList cell renderer
     private static ListCellRenderer<? super Event> createEventsListRenderer() {
         final Color darkOrange = new Color(255,128,0);
         return new DefaultListCellRenderer() {
@@ -588,7 +593,6 @@ public class MainGUI extends JFrame{
 
                 if(event instanceof BackjumpEvent)
                     setForeground(darkOrange);
-                    //setForeground(Color.orange);
 
                 return this;
             }
