@@ -368,8 +368,11 @@ public class MainGUI extends JFrame{
                 "Run this executable with\njava -jar SAT-IT.jar -h\nto find more about the command line interface ",
                 "CLI", JOptionPane.INFORMATION_MESSAGE));
         helpMenu.add(cliMenuItem);
+
         JMenuItem aboutMenuItem = new JMenuItem("About");
-        aboutMenuItem.addActionListener(stub -> new AboutDialogWindow());
+        aboutMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
+                "SAT-IT " + MainGUI.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
+                "About", JOptionPane.INFORMATION_MESSAGE));
         helpMenu.add(aboutMenuItem);
 
         jMenuBar.add(fileMenu);
