@@ -208,6 +208,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
     var clausesLeft = new ArrayBuffer[Set[Int]]()
     var clausesRight = new ArrayBuffer[Set[Int]]()
     var resolutionLits = new ArrayBuffer[Int]()
+    val conflictClauses = (failClauseIdx, whoPropagated(math.abs(lastLevelLit)))
 
     while(resolvent.intersect(lastDecisionLevelLitsSet).size>1){ //mentre resolvent tingui mes d'un literal de lultim nivell de decisio...
       val indexClauseToSolveWith = whoPropagated(math.abs(lastLevelLit))
@@ -228,7 +229,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
     //logging
     clausesLeft += resolvent
-    conflictLogger.log(new ConflictLog(clausesLeft, clausesRight, resolutionLits, lastDecisionLevelLitsSet))
+    conflictLogger.log(new ConflictLog(clausesLeft, clausesRight, resolutionLits, lastDecisionLevelLitsSet, conflictClauses))
 
     val newClauseAB = resolvent.to(ArrayBuffer)
     val newClause = new Clause(newClauseAB)

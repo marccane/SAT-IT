@@ -559,7 +559,7 @@ public class MainGUI extends JFrame{
     JPanel getjPanel(){
         return jPanel;
     }
-    
+
     void focusOnConflictClause(){
         listClauses.ensureIndexIsVisible(solver.guiConflClause());
     }
