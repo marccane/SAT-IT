@@ -17,7 +17,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.net.URISyntaxException;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 import static gui.EventHandler.*;
@@ -26,7 +26,7 @@ import static util.Constants.*;
 
 public class MainGUI extends JFrame{
 
-    static final String VERSION = "0.3141592";
+    private static final String VERSION = "0.31415926";
 
     public MainGUI() {
         super("SAT-IT");
@@ -46,7 +46,7 @@ public class MainGUI extends JFrame{
     private void handleParametersAndInit(String filename, SolverType solverType){
         Instance instance = new Instance();
         if(!filename.isEmpty())
-            instance.readDimacs(filename);
+            instance = loadInstanceFromFile(new File(filename));
         if(solverType!=null)
             this.solverType = solverType;
         initGUI(instance);
@@ -63,10 +63,10 @@ public class MainGUI extends JFrame{
         setEventHandlers();
         addStylesToDocument(textPaneTrail.getStyledDocument());
 
-        loadInstance(instance);
+        loadInstanceGUI(instance);
     }
 
-    private void loadInstance(Instance instance){
+    private void loadInstanceGUI(Instance instance){
         //Netejar GUI
         textPaneTrail.setText("");
         ((DefaultListModel<Event>) listEvents.getModel()).clear();
@@ -94,13 +94,35 @@ public class MainGUI extends JFrame{
             trailAddFinishText(solver.solverState(),textPaneTrail.getStyledDocument());
             updateClauses();
             updateEvents();
+        } catch(Exception e){
+            JOptionPane.showMessageDialog(this,"Unknown exception: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
-        catch(Exception e){e.printStackTrace();}
+    }
+
+    private Instance loadInstanceFromFile(File file){
+        Instance instance = new Instance();
+        try {
+            instance.readDimacs(file);
+        } catch(FileNotFoundException e){
+            JOptionPane.showMessageDialog(this,"File not found","Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch(NumberFormatException e){
+            JOptionPane.showMessageDialog(this,
+                    "Invalid file format\nPlease select a DIMACS CNF file","Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch(Exception e){
+            JOptionPane.showMessageDialog(this,"Unknown exception: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+        return instance;
     }
 
     //Netejar i reiniciar la instancia actual
     void resetGUI(){
-        loadInstance(lastInstance);
+        loadInstanceGUI(lastInstance);
     }
 
     private void setEventHandlers(){
@@ -122,14 +144,11 @@ public class MainGUI extends JFrame{
                             "Are you sure you want to exit the program?", "Confirmation",
                             JOptionPane.YES_NO_OPTION);
 
-                    if (confirmed == JOptionPane.YES_OPTION) {
-                        //dispose();
+                    if (confirmed == JOptionPane.YES_OPTION)
                         System.exit(0);
-                    }
                 }
-                else{
+                else
                     System.exit(0);
-                }
             }
         });
     }
@@ -315,11 +334,8 @@ public class MainGUI extends JFrame{
                         loadInstance = false;
                 }
 
-                if(loadInstance){
-                    Instance instance = new Instance();
-                    instance.readDimacs(file);
-                    loadInstance(instance);
-                }
+                if(loadInstance)
+                    loadInstanceGUI(loadInstanceFromFile(file));
             }
         });
 
@@ -349,8 +365,6 @@ public class MainGUI extends JFrame{
 
         JCheckBoxMenuItem manualDecisionsCheckBoxMenuItem = new JCheckBoxMenuItem("Manual Decisions", manualDecision);
         manualDecisionsCheckBoxMenuItem.addItemListener(evt -> {
-            //System.out.println(evt.getStateChange() == ItemEvent.SELECTED ? "SEL" : "NOT SEL");
-            //JCheckBoxMenuItem item = (JCheckBoxMenuItem)evt.getItem();
             if(evt.getStateChange() == ItemEvent.SELECTED){
                 manualDecision = true;
                 solver.setDecisionCallback(manualDecisionCallback);
@@ -485,12 +499,10 @@ public class MainGUI extends JFrame{
     }
 
     private void trailAddLiteral(int litIdx) throws javax.swing.text.BadLocationException{
-
         int lit = solver.getTrailIndex(litIdx);
         StyledDocument doc = textPaneTrail.getStyledDocument();
 
         if(TWLsolver) { //cdcl i dpll
-
             TwoWatchedLiteralSolver wlSolver = (TwoWatchedLiteralSolver) solver;
             Integer propagator = wlSolver.getWhoPropagated(lit);
 

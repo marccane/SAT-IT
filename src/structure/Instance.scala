@@ -1,16 +1,22 @@
 package structure
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
+
 import scala.io.BufferedSource
 
 class Instance {
 
   var instance: Array[Array[Int]] = new Array[Array[Int]](0)
 
+  //forcem les checked exceptions perque si no java no s'entera
+  @throws(classOf[FileNotFoundException])
+  @throws(classOf[NumberFormatException])
   def readDimacs(filename: String): Unit ={
     instance = readDimacsInternal(scala.io.Source.fromFile(filename))
   }
 
+  @throws(classOf[FileNotFoundException])
+  @throws(classOf[NumberFormatException])
   def readDimacs(file: File): Unit ={
     instance = readDimacsInternal(scala.io.Source.fromFile(file))
   }

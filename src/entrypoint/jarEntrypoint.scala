@@ -16,7 +16,7 @@ object jarEntrypoint {
     else if(args(0) == "-h" || args(0) == "--help")
       showHelp
     else if(argc > 1 || args(0).startsWith("-")){ //seria raro que volguessin executar la GUI amb un fitxer que comenca per '-'
-      Console.err.println("ERROR: incorrect syntax")
+      Console.err.println("Error: incorrect syntax")
       println
       showHelp
     }
@@ -34,13 +34,13 @@ object jarEntrypoint {
 
     if(argc == 1){
       error = true
-      Console.err.println("ERROR: file is required for CLI mode")
+      Console.err.println("Error: file is required for CLI mode")
       println
       showHelp
     }
     else if(!new java.io.File(args(1)).exists){ //assumim argc > 1
       error = true
-      Console.err.println("ERROR: file " + args(1) + " doesn't exist")
+      Console.err.println("Error: file " + args(1) + " doesn't exist")
     }
     else if(new java.io.File(args(1)).isFile){
       filename = args(1)
@@ -62,41 +62,52 @@ object jarEntrypoint {
         }
 
         if(error) {
-          Console.err.println("ERROR: unknown parameter '" + args(i-1) + "'")
+          Console.err.println("Error: unknown parameter '" + args(i-1) + "'")
         }
       }
     }
     else{
       error = true
-      Console.err.println("ERROR: unknown file error")
+      Console.err.println("Error: unknown file error")
     }
 
     if(!error){
       val instance = new Instance
-      instance.readDimacs(filename)
-      solvePrint(instance, solver, events)
+      try {
+        instance.readDimacs(filename)
+        solvePrint(instance, solver, events)
+      }
+      catch{
+        case _: NumberFormatException   => Console.err.println("Error: Invalid file format. Please select a DIMACS CNF file")
+        case e: Exception               => Console.err.println("Error:  " + e.getMessage);
+      }
     }
   }
 
+  //No obrim la gui si el fitxer que ens passen no existeix (si el fitxer te un format erroni si que s'obre...)
   def handleGUIArguments(args: Array[String]): Unit ={
     if(!new java.io.File(args(0)).exists){
-      Console.err.println("ERROR: file " + args(0) + " doesn't exist")
+      Console.err.println("Error: file " + args(0) + " doesn't exist")
     }
     else if(new java.io.File(args(0)).isFile){
       new MainGUI(args(0))
     }
     else{
-      Console.err.println("ERROR: unknown file error")
+      Console.err.println("Error: unknown file error")
     }
   }
 
   def solvePrint(instance: Instance, solver: Solver, mostrarEvents: Boolean = false): Unit ={
     val solved = solver.solve(instance)
-    print("s ")
-    println(if(solved)"SATISFIABLE" else "UNSATISFIABLE")
+    println(if(solved)"s SATISFIABLE" else "s UNSATISFIABLE")
     if(mostrarEvents) solver.printEvents(true)
-    solver.printSolution()
-    solver.solutionCheck()
+    try {
+      solver.solutionCheck()
+      solver.printSolution()
+    }
+    catch{
+      case e: Exception => Console.err.println(e.getMessage)
+    }
   }
 
   def showHelp: Unit ={

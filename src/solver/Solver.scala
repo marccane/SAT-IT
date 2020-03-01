@@ -204,8 +204,6 @@ abstract class Solver {
   }
 
   def solutionCheck(): Unit ={
-    /*if(solverState==SolvingState.SAT)
-      println(if(correctSolution) "OK" else "----->ERROR<-----")*/
     if(solverState==SolvingState.SAT && !correctSolution)
       throw new Exception("Internal error: incorrect or incomplete solution")
   }
