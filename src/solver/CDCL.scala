@@ -33,6 +33,34 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
     if(solverState == SolvingState.UNSOLVED) {
 
+      val indexNoSatisfetes = (clauses.numInitialClauses until clauses.getNumClauses).filterNot(isSatisfied)
+      val almenys3elements= indexNoSatisfetes.filter(x=>clauses.getClause(x).getClause.length>2)
+      val TWLBAD = toPropagate.isEmpty && almenys3elements.nonEmpty && almenys3elements.forall(i => {
+        val clausula = clauses.getClause(i).getClause
+        val firstLit = clausula(0)
+        val secondLit = clausula(1)
+        val firstLitAbs = math.abs(firstLit)
+        val secondLitAbs = math.abs(secondLit)
+        val firstLitState = variablesState(firstLitAbs)
+        val secondLitState = variablesState(secondLitAbs)
+        val isFirstLitUndef = firstLitState == State.UNDEF //ULL! The literal can be undefined, false or TRUE but we only care if it's undefined or falsified (because it can't be satisfied cause we filtered them)
+        val isSecondLitUndef = secondLitState == State.UNDEF
+        var result = false
+        if((isFirstLitUndef || isSecondLitUndef ) && !(isFirstLitUndef && isSecondLitUndef)){
+          if((2 until clausula.length).exists(j => variablesState(math.abs(clausula(j))) == State.UNDEF))
+            result = true //<-- posar breakpoint en aquesta linia
+        }
+        result
+      }
+     )
+
+      if(TWLBAD)
+      {
+        //Console.err.println(trail,variablesState.toString)
+        //clauses.learnt.clauses.foreach(print)
+        //throw new Exception("ERROR 2wl")
+      }
+
       if (toPropagate.nonEmpty) {
         guiConflClause = unitPropagation()
         if(guiConflClause != -1) //conflicte o UNSAT, no ho podem saber sense mirar el trail (es podria fer O(1))
@@ -75,6 +103,27 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
     while(trail.length<numVariables){
       val conflClause = unitPropagation()
+
+      val indexNoSatisfetes = (clauses.numInitialClauses until clauses.getNumClauses).filterNot(isSatisfied)
+      val almenys3elements= indexNoSatisfetes.filter(x=>clauses.getClause(x).getClause.length>2)
+      val TWLBAD = almenys3elements.nonEmpty && almenys3elements.forall(i => {
+        val clausula = clauses.getClause(i).getClause
+        val firstLit = clausula(0)
+        val secondLit = clausula(1)
+        val firstLitAbs = math.abs(firstLit)
+        val secondLitAbs = math.abs(secondLit)
+        val firstLitState = variablesState(firstLitAbs)
+        val secondLitState = variablesState(secondLitAbs)
+        val isFirstLitUndef = firstLitState == State.UNDEF //ULL! The literal can be undefined, false or TRUE but we only care if it's undefined or falsified (because it can't be satisfied cause we filtered them)
+        val isSecondLitUndef = secondLitState == State.UNDEF
+        var result = false
+        if((isFirstLitUndef || isSecondLitUndef ) && !(isFirstLitUndef && isSecondLitUndef)){
+          if((2 until clausula.length).exists(j => variablesState(math.abs(clausula(j))) == State.UNDEF))
+            result = true //<-- posar breakpoint en aquesta linia
+        }
+        result
+      }
+      )
 
       if(conflClause != -1) { //si hi ha hagut conflicte...
         val decisionLevel = conflictAnalysisAndLearning(conflClause)
