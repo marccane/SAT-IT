@@ -68,15 +68,16 @@ class EventHandler {
             int solverAction;
             do{
                 solverAction = mainGUI.solverStep();
-            }
-            while(bc.stopOnEvents(solverAction));
+            } while(bc.stopOnEvents(solverAction));
 
             if(solverAction == SOLVER_CONFLICT)
                 mainGUI.focusOnConflictClause();
+            else if(solverAction == SOLVER_BACKJUMP)
+                mainGUI.focusOnLearnedClause();
             else if(solverAction == SOLVER_END)
-                solverShowResult(solver, mainGUI.getjPanel());
+                solverShowResult(solver, mainGUI.getPanel());
         }
-        else solverShowResult(solver, mainGUI.getjPanel());
+        else solverShowResult(solver, mainGUI.getPanel());
         mainGUI.updateGUI();
     }
 

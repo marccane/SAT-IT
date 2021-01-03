@@ -26,7 +26,7 @@ import static util.Constants.*;
 
 public class MainGUI extends JFrame{
 
-    private static final String VERSION = "0.31415926";
+    private static final String VERSION = "0.314159265";
 
     public MainGUI() {
         super("SAT-IT");
@@ -52,11 +52,6 @@ public class MainGUI extends JFrame{
         initGUI(instance);
     }
 
-    //temp vars per timetravel (per fer una copia parcial del trail, unused)
-    StyledDocument testDoc;
-    boolean testCopiaFeta = false;
-    int specCount;
-
     //Aixo s'ha de cridar NOMES una vegada (quan inicialitzem la gui)
     private void initGUI(Instance instance){
         initComponents();
@@ -74,7 +69,7 @@ public class MainGUI extends JFrame{
 
         //Inicialitzar variables
         solver = newSolver();
-        if(manualDecision) solver.setDecisionCallback(manualDecisionCallback);
+        if(manualDecisionOption) solver.setDecisionCallback(manualDecisionCallback);
         oldTrailLength = 0;
         lastInstance = instance;
         instanceLoaded = instance.numVariables() != 0;
@@ -311,46 +306,45 @@ public class MainGUI extends JFrame{
 
         JMenu fileMenu = new JMenu("File");
 
-        JMenuItem openMenuItem = new JMenuItem("Open");
-        openMenuItem.addActionListener(stub -> {
-            JFileChooser jfc = new JFileChooser(System.getProperty("user.dir"));
-            //JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+            JMenuItem openMenuItem = new JMenuItem("Open");
+            openMenuItem.addActionListener(stub -> {
+                JFileChooser jfc = new JFileChooser(System.getProperty("user.dir"));
+                //JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
 
-            jfc.setDialogTitle("Select an instance");
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("DIMACS CNF (.cnf, .dimacs)", "cnf", "dimacs");
-            jfc.addChoosableFileFilter(filter);
-            jfc.removeChoosableFileFilter(jfc.getAcceptAllFileFilter());
-            jfc.addChoosableFileFilter(jfc.getAcceptAllFileFilter());
+                jfc.setDialogTitle("Select an instance");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("DIMACS CNF (.cnf, .dimacs)", "cnf", "dimacs");
+                jfc.addChoosableFileFilter(filter);
+                jfc.removeChoosableFileFilter(jfc.getAcceptAllFileFilter());
+                jfc.addChoosableFileFilter(jfc.getAcceptAllFileFilter());
 
-            boolean loadInstance = true;
-            int returnVal = jfc.showOpenDialog(this);
-            if(returnVal == JFileChooser.APPROVE_OPTION){
-                File file = jfc.getSelectedFile();
-                if(instanceLoaded){
-                    int confirmed = JOptionPane.showConfirmDialog(this,
-                            confirmResetMessage, "Confirmation", JOptionPane.YES_NO_OPTION);
+                boolean loadInstance = true;
+                int returnVal = jfc.showOpenDialog(this);
+                if(returnVal == JFileChooser.APPROVE_OPTION){
+                    File file = jfc.getSelectedFile();
+                    if(instanceLoaded){
+                        int confirmed = JOptionPane.showConfirmDialog(this,
+                                confirmResetMessage, "Confirmation", JOptionPane.YES_NO_OPTION);
 
-                    if(confirmed == JOptionPane.NO_OPTION)
-                        loadInstance = false;
+                        if(confirmed == JOptionPane.NO_OPTION)
+                            loadInstance = false;
+                    }
+
+                    if(loadInstance)
+                        loadInstanceGUI(loadInstanceFromFile(file));
                 }
+            });
 
-                if(loadInstance)
-                    loadInstanceGUI(loadInstanceFromFile(file));
-            }
-        });
+            JMenuItem resetMenuItem = new JMenuItem("Reset");
+            resetMenuItem.addActionListener(stub -> {
+                        int confirmed = JOptionPane.showConfirmDialog(this, confirmResetMessage, "Confirmation",
+                                JOptionPane.YES_NO_OPTION);
 
-        JMenuItem resetMenuItem = new JMenuItem("Reset");
-        resetMenuItem.addActionListener(stub -> {
-                    int confirmed = JOptionPane.showConfirmDialog(this, confirmResetMessage, "Confirmation",
-                            JOptionPane.YES_NO_OPTION);
-
-                    if (confirmed == JOptionPane.YES_OPTION)
-                        resetGUI();
-                }
-        );
-
-        JMenuItem exitMenuItem = new JMenuItem("Exit");
-        exitMenuItem.addActionListener(stub -> dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
+                        if (confirmed == JOptionPane.YES_OPTION)
+                            resetGUI();
+                    }
+            );
+            JMenuItem exitMenuItem = new JMenuItem("Exit");
+            exitMenuItem.addActionListener(stub -> dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
         fileMenu.add(openMenuItem);
         fileMenu.add(resetMenuItem);
@@ -359,35 +353,49 @@ public class MainGUI extends JFrame{
 
         JMenu optionsMenu = new JMenu("Options");
 
-        JMenuItem solverMenuItem = new JMenuItem("Change solver");
-        solverMenuItem.addActionListener(stub -> new SolverSelectorWindow(this,solver));
-        optionsMenu.add(solverMenuItem);
+            JMenuItem solverMenuItem = new JMenuItem("Change solver");
+            solverMenuItem.addActionListener(stub -> new SolverSelectorWindow(this,solver));
 
-        JCheckBoxMenuItem manualDecisionsCheckBoxMenuItem = new JCheckBoxMenuItem("Manual Decisions", manualDecision);
-        manualDecisionsCheckBoxMenuItem.addItemListener(evt -> {
-            if(evt.getStateChange() == ItemEvent.SELECTED){
-                manualDecision = true;
-                solver.setDecisionCallback(manualDecisionCallback);
-            } else {
-                manualDecision = false;
-                solver.resetDecisionCallback();
-            }
-        });
+            JCheckBoxMenuItem manualDecisionsCheckBoxMenuItem = new JCheckBoxMenuItem("Manual Decisions", manualDecisionOption);
+            manualDecisionsCheckBoxMenuItem.addItemListener(evt -> {
+                if(evt.getStateChange() == ItemEvent.SELECTED){
+                    manualDecisionOption = true;
+                    solver.setDecisionCallback(manualDecisionCallback);
+                } else {
+                    manualDecisionOption = false;
+                    solver.resetDecisionCallback();
+                }
+            });
+
+            JCheckBoxMenuItem focusOnConflictClauseCheckBoxMenuItem = new JCheckBoxMenuItem("Auto-focus on conflict clause", autoFocusOnConflictOption);
+            focusOnConflictClauseCheckBoxMenuItem.addItemListener(evt -> {
+                autoFocusOnConflictOption = !autoFocusOnConflictOption;
+            });
+
+            JCheckBoxMenuItem focusOnLearnedClauseCheckBoxMenuItem = new JCheckBoxMenuItem("Auto-focus on learned clause", autoFocusOnLearnedOption);
+            focusOnLearnedClauseCheckBoxMenuItem.addItemListener(evt -> {
+                autoFocusOnLearnedOption = !autoFocusOnLearnedOption;
+            });
+
+        optionsMenu.add(solverMenuItem);
         optionsMenu.add(manualDecisionsCheckBoxMenuItem);
+        optionsMenu.addSeparator();
+        optionsMenu.add(focusOnConflictClauseCheckBoxMenuItem);
+        optionsMenu.add(focusOnLearnedClauseCheckBoxMenuItem);
 
         JMenu helpMenu = new JMenu("Help");
-        JMenuItem cliMenuItem = new JMenuItem("CLI");
 
-        cliMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
-                "Run this executable with\njava -jar SAT-IT.jar -h\nto find more about the command line interface ",
-                "CLI", JOptionPane.INFORMATION_MESSAGE));
-        helpMenu.add(cliMenuItem);
+            JMenuItem cliMenuItem = new JMenuItem("CLI");
+            cliMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
+                    "Run this executable with\njava -jar SAT-IT.jar -h\nto find more about the command line interface ",
+                    "CLI", JOptionPane.INFORMATION_MESSAGE));
+            helpMenu.add(cliMenuItem);
 
-        JMenuItem aboutMenuItem = new JMenuItem("About");
-        aboutMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
-                "SAT-IT " + MainGUI.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
-                "About", JOptionPane.INFORMATION_MESSAGE));
-        helpMenu.add(aboutMenuItem);
+            JMenuItem aboutMenuItem = new JMenuItem("About");
+            aboutMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
+                    "SAT-IT " + MainGUI.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
+                    "About", JOptionPane.INFORMATION_MESSAGE));
+            helpMenu.add(aboutMenuItem);
 
         jMenuBar.add(fileMenu);
         jMenuBar.add(optionsMenu);
@@ -499,6 +507,7 @@ public class MainGUI extends JFrame{
     }
 
     private void trailAddLiteral(int litIdx) throws javax.swing.text.BadLocationException{
+    //} void stub2(int litIdx) throws javax.swing.text.BadLocationException{
         int lit = solver.getTrailIndex(litIdx);
         StyledDocument doc = textPaneTrail.getStyledDocument();
 
@@ -530,10 +539,14 @@ public class MainGUI extends JFrame{
             else{ //backtrack
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("backtrackLiteral"));
                 doc.insertString(doc.getLength(), "BK", doc.getStyle("superscript"));
-
             }
             doc.insertString(doc.getLength(), " ", doc.getStyle("default"));
         }
+    }
+
+    void updateGUI(){
+        updateClauses();
+        updateEvents();
     }
 
     private void updateClauses(){
@@ -544,6 +557,11 @@ public class MainGUI extends JFrame{
         clauses.forEach(lmClauses::addElement);
         //FIXME (la gracia seria nomes setejarho una vegada)
         listClauses.setCellRenderer(createListRenderer(solver.variablesState(),solver.clauses().numInitialClauses()));
+
+        if(focusOnLearnedClauseDelay){
+            focusOnLearnedClauseDelay = false;
+            listClauses.ensureIndexIsVisible(listClauses.getModel().getSize()-1);
+        }
     }
 
     private void updateEvents(){ //todo millorar: no cal tornar a escriure tots els events
@@ -552,11 +570,6 @@ public class MainGUI extends JFrame{
         lmEvents.clear();
         while(eventIt.hasNext()) lmEvents.addElement(eventIt.next());
         listEvents.ensureIndexIsVisible(lmEvents.size()-1); //autoscroll a l'ultim event cada cop que n'afegim un
-    }
-
-    void updateGUI(){
-        updateClauses();
-        updateEvents();
     }
 
     private void trailAddFinishText(Enumeration.Value solverState, StyledDocument doc) throws javax.swing.text.BadLocationException{
@@ -568,12 +581,18 @@ public class MainGUI extends JFrame{
         }
     }
 
-    JPanel getjPanel(){
+    JPanel getPanel(){
         return jPanel;
     }
 
     void focusOnConflictClause(){
-        listClauses.ensureIndexIsVisible(solver.guiConflClause());
+        if(autoFocusOnConflictOption)
+            listClauses.ensureIndexIsVisible(solver.guiConflClause());
+    }
+
+    void focusOnLearnedClause(){
+        if(autoFocusOnLearnedOption)
+            focusOnLearnedClauseDelay = true; //we can't do it right now because the new clause still hasn't been added to the gui's clause list
     }
 
     private ViewableSolver newSolver(){
@@ -622,9 +641,10 @@ public class MainGUI extends JFrame{
         int specIndex;
     }
 
-    private SolverType solverType = SolverType.CDCL;
-    boolean instanceLoaded = false;
-    private boolean manualDecision = false;
+    //Atributs pel timetravel (per fer una copia parcial del trail, unused)
+    //StyledDocument testDoc;
+    //boolean testCopiaFeta = false;
+    //int specCount;
 
     //Attributs d'Swing
     private JPanel jPanel;
@@ -639,8 +659,18 @@ public class MainGUI extends JFrame{
     //Atributs del solver
     private Instance lastInstance;
     private ViewableSolver solver;
+    private SolverType solverType = SolverType.CDCL;
+
+    //Atributs auxiliars
+    boolean instanceLoaded = false;
     private boolean TWLsolver;
     private int oldTrailLength;
+    private boolean focusOnLearnedClauseDelay = false;
+
+    //User-toggleable options
+    private boolean manualDecisionOption = false;
+    private boolean autoFocusOnConflictOption = true;
+    private boolean autoFocusOnLearnedOption = true;
 
     static final String confirmResetMessage = "You will lose the solving progress. Are you sure?";
 

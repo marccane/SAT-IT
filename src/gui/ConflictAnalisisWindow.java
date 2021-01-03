@@ -12,9 +12,9 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 
-public class ConflictAnalisisWindow extends JFrame{
+class ConflictAnalisisWindow extends JFrame{
 
-    public ConflictAnalisisWindow(ConflictLog clog) {
+    ConflictAnalisisWindow(ConflictLog clog) {
         super("Conflict analisis (clauses " + clog.conflClauses()._1() + " and " + clog.conflClauses()._2() + ")");
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
