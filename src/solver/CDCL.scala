@@ -274,6 +274,12 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
       resolvent = resolvent.union(clauseToSolveWith)
 
       lastLevelLit = getLastLevelLit(resolvent, lastDecisionLevelLits)
+
+      if(resolutionLits.contains(lastLevelLit)) //we already solved with this literal, we're screwing up
+        this.toString //breakpoint
+
+      if(clausesLeft.length > 1000) //we are likely stuck
+        this.toString //breakpoint
     }
 
     //logging
