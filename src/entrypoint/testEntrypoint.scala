@@ -43,6 +43,7 @@ object testEntrypoint {
 
     val instance = new Instance
     for (file <- cnfFiles) {
+      val solver = new CDCL
       println("Executant " + file.getName)
       instance.readDimacs(file)
       try{

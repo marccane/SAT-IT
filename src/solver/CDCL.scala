@@ -148,6 +148,49 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
     throw new Exception
   }
 
+  //Pre: El primer o segon literal de newClause conté el literal aprés
+  //Post: Obté l'últim literal de newClause que s'ha assignat en el trail, o un indefinit, i fa swap amb la primera
+  //      o segona posició de newClause
+  private def secondWlearned(indexForcedLit : Int, newClause : Clause, newClauseIndex : Int) {
+
+    //Mirem si hi ha una clàusula indefinida
+    //Índex de la posició on potser estar el literal forcat a propagar-se
+    var indexForcWatch = 0
+    //Índex de la posició on anira el nou observat
+    var indexNewWatch = 1
+    //Si el literal forcat ja estava a la segona posició, hem de canviar els valors anteriors
+    if(indexForcedLit == 1) {
+      indexForcWatch = 1
+      indexNewWatch = 0
+    }
+
+    var i = 2
+    var undefinedFound = false
+    var trobat = false
+    val clause = newClause.getClause
+    while(i < clause.length && !undefinedFound)
+    {
+      if (varValue(math.abs(clause(i))) == State.UNDEF) { //busquem un literal no assignat
+        undefinedFound = true
+      }
+      else i += 1
+    }
+
+    if(!undefinedFound) {
+      i = 0
+      for (l <- trail.reverse; if !trobat) {
+        if (clause.contains(-l) && -l != newClause.getClause(indexForcWatch)) {
+          trobat = true
+          i = newClause.getClause.indexOf(-l)
+        }
+      }
+    }
+    if (trobat || undefinedFound) {
+      swapWL(newClause, newClauseIndex, indexNewWatch, i)
+    }
+  }
+
+
   private def calculateBackjumpLevel(clauseAct: Set[Int], newClause: Clause, newClauseIndex: Int): Int ={
     var trailIdx = 0
     var penultimateLiteral = 0
@@ -186,6 +229,8 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
     if(indexForcedLit>1) //si l'ultim literal del nivell de decisio no esta watched li posem
       swapWL(newClause,newClauseIndex,0,indexForcedLit)
+
+    secondWlearned(indexForcedLit, newClause, newClauseIndex)
 
     trailIdx
   }
