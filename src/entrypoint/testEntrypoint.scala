@@ -13,14 +13,15 @@ object testEntrypoint {
   def solveAll(carpeta: String): Unit = {
     val testFiles = new File(System.getProperty("user.dir") + java.io.File.separator + carpeta).listFiles()
       .filter(x => x.isFile && x.getName.endsWith(".test")).sortBy(_.length())
-
+    var results: List[(Int, Int)] = List()
     for (testFile <- testFiles) {
+      var errors = 0
+      var warning = 0
 
       val lines = readFile(testFile.getPath)
       for (line <- lines; if line != "") {
 
         val Array(filename, solver_type, solvingState, numDecisions, numConflicts, numPropagations, trailStr) = line.split(';').map(_.trim)
-        println(filename)
 
         var solver: Solver = null;
         if (solver_type == "DPLL") {
@@ -43,18 +44,34 @@ object testEntrypoint {
             val content = s"${filename};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
 
             if (line != content) {
-              println(s"The solution for the file ${filename} was expected:")
-              println(line)
-              println(s"Found:${content}")
+              if(solvingState != statics._1.toString ){
+                println(s"The state of solution for the file ${filename} was ${solvingState} and found ${statics._1}")
+                errors += 1
+              }
+              if (trailStr != statics._3.mkString(",")){
+                println(s"The trail of solution for the file ${filename} was ${trailStr} and found ${statics._3.mkString(",")}")
+                errors += 1
+              }
+              if(numDecisions != statics._2._1.toString || numConflicts != statics._2._2.toString || numPropagations != statics._2._3.toString){
+                warning += 1
+                println(s"The decisions or conflicts or propagations for the file ${filename} and solver ${solver_type} was ${numDecisions} ${numConflicts} ${numPropagations} and found ${statics._2._1} ${statics._2._2} ${statics._2._3}")
+              }
             }
           }
           catch {
-            case e: Exception => e.printStackTrace()
+            case e: Exception => {
+              e.printStackTrace()
+              errors += 1
+            }
           }
         } else {
           println(s"The file ${filename} was not found")
         }
       }
+      results = results.appended((warning, errors))
+    }
+    for (file_result <- testFiles zip results){
+      println(s"${file_result._1}: warnings = ${file_result._2._1}, errors = ${file_result._2._2}")
     }
   }
 

@@ -7,7 +7,7 @@ import java.io.{BufferedWriter, File, FileWriter}
 object generatorTestEntrypoint {
 
   def main(args: Array[String]): Unit = {
-    solveAll(System.getProperty("user.dir") + File.separator + "cnf", 1500)
+    solveAll(System.getProperty("user.dir") + File.separator + "cnf")
   }
 
   //Obté tots els fitxers, recursivament, de path
@@ -23,24 +23,17 @@ object generatorTestEntrypoint {
     fitxersResultants
   }
 
-  // Fa timeout a f
-  //https://stackoverflow.com/questions/51790448/get-partial-result-on-scala-time-limited-best-effort-computation
-  @throws(classOf[java.util.concurrent.TimeoutException])
-  def timedRun[F](timeout: Long)(f: => F): F = {
-    import java.util.concurrent.{Callable, FutureTask, TimeUnit}
-    val task = new FutureTask(new Callable[F]() {
-      def call() = f
-    })
+  def solveAll(carpeta: String): Unit = {
+    //val cnfFiles = obtenirTotsFitxers(carpeta)
+    val cnfEasyFiles = obtenirTotsFitxers(carpeta + File.separator + "easy")
+    val cnfNormalFiles = obtenirTotsFitxers(carpeta + File.separator + "normal")
+    val cnfHardFiles = obtenirTotsFitxers(carpeta + File.separator + "hard")
 
-    new Thread(task).start()
-    task.get(timeout, TimeUnit.MILLISECONDS)
-  }
+    val cnfForBK = cnfEasyFiles
+    val cnfForDPLL = cnfEasyFiles ++ cnfNormalFiles
+    val cnfForCDCL = cnfEasyFiles ++ cnfNormalFiles ++ cnfHardFiles
 
-
-  def solveAll(carpeta: String, timeout: Long): Unit = {
-    val cnfFiles = obtenirTotsFitxers(carpeta)
-
-    for (solver_type <- List("CDCL", "DPLL","BK")) {
+    for ((solver_type, filesForSolver) <- List(("CDCL", cnfForCDCL), ("DPLL", cnfForDPLL),("BK", cnfForBK))) {
 
       val file = new File(java.nio.file.Paths.get(".", "test_cnf", s"${solver_type}.test").toString)
       if(file.exists()){
@@ -48,33 +41,26 @@ object generatorTestEntrypoint {
       }
       val bw = new BufferedWriter(new FileWriter(file, true))
 
-      for(file <- cnfFiles){
+      for(file <- filesForSolver){
         println(s"${solver_type} : ${file.getName}")
-        try {
-          timedRun(timeout) {
-            val instance = new Instance
-            instance.readDimacs(file)
+        val instance = new Instance
+        instance.readDimacs(file)
 
-            var solver: Solver = null;
-            if (solver_type == "DPLL") {
-              solver = new DPLL
-            }
-            else if (solver_type == "BK") {
-              solver = new Backtracking
-            }
-            else {
-              solver = new CDCL
-            }
+        var solver: Solver = null;
+        if (solver_type == "DPLL") {
+          solver = new DPLL
+        }
+        else if (solver_type == "BK") {
+          solver = new Backtracking
+        }
+        else {
+          solver = new CDCL
+        }
 
-            solver.solve(instance)
-            val statics = solver.getStatics()
-            val content = s".${file.getPath.substring(System.getProperty("user.dir").length)};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
-            bw.append(content + System.lineSeparator())
-          }
-        }
-        catch{
-          case e: Exception => println(s"${solver_type} : ${file.getName} (no solution)")
-        }
+        solver.solve(instance)
+        val statics = solver.getStatics()
+        val content = s".${file.getPath.substring(System.getProperty("user.dir").length)};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
+        bw.append(content + System.lineSeparator())
       }
       bw.close()
     }
