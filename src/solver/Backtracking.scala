@@ -43,7 +43,8 @@ class Backtracking extends ViewableSolver {
       }
       else if(trail.length<numVariables){
         val lit = makeDecision
-        assign(lit, Reason.DECISION) //Assignar i processar lit
+        if(!this.isCancel) assign(lit, Reason.DECISION) //Assignar i processar lit
+        else return CANCEL_DECISION
         return SOLVER_DECISION
       }
 
@@ -94,6 +95,8 @@ class Backtracking extends ViewableSolver {
     varValue(atom) = if(literal>0) State.TRUE else State.FALSE
     assignmentReason(atom) = reason
     trail.append(literal)
+    if(reason == Reason.DECISION && historySolver != null) historySolver.addLiteral(literal)
+    addDetectedBreakpoint(atom)
   }
 
   //Pre: trailIndex < trail.length

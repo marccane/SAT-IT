@@ -48,7 +48,8 @@ class DPLL extends ViewableSolver with TwoWatchedLiteralSolver{
       }
       else if (trail.length < numVariables) {
         val lit = makeDecision
-        assign(lit, Reason.DECISION)
+        if(!this.isCancel) assign(lit, Reason.DECISION)
+        else return CANCEL_DECISION
         return SOLVER_DECISION
       }
       else{ //tenim totes les variables assignades i no hi ha hagut conflicte => SAT
@@ -99,6 +100,8 @@ class DPLL extends ViewableSolver with TwoWatchedLiteralSolver{
     trail.append(literal)
     whoPropagated(atom) = propagator
     toPropagate.push(literal)
+    if(reason == Reason.DECISION && historySolver != null) historySolver.addLiteral(literal)
+    addDetectedBreakpoint(atom)
   }
 
   //Pre: trailIndex < trail.length

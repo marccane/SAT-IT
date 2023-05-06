@@ -1,12 +1,14 @@
 package solver
 
 import gui.DecisionCallback
+import javafx.util.Pair
 import structure.enumeration.Reason.Reason
 import structure.enumeration.{Reason, SolvingState, State}
 import structure.enumeration.SolvingState.SolvingState
 import structure.enumeration.State.State
-import structure.{ClauseWrapper, EventManager, Instance}
+import structure.{ClauseWrapper, EventManager, Instance, LitScoreSet, VSIDSPropiety}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 abstract class Solver {
@@ -20,13 +22,23 @@ abstract class Solver {
   var trail: ArrayBuffer[Int] = _
   var varValue: ArrayBuffer[State] = _
   var assignmentReason: ArrayBuffer[Reason] = _
+  var vsids: Boolean = false
+  var vsidsPropiety: VSIDSPropiety = _
+  var historySolver: HistorySolver = _
+  var detectedVarBreakpoints: mutable.Queue[Int] = _
+  var varBreakpoints: mutable.HashSet[Int] = _
+  protected var isCancel = false
 
   protected var numVariables: Int = -1 //per evitar recalcular
+
 
   //Metodes comuns solver
   def init(instance: Instance, doInitialUnitProp: Boolean = true): SolvingState = {
     numVariables = instance.numVariables
     trail = new ArrayBuffer[Int](numVariables)
+    varBreakpoints = new mutable.HashSet[Int]()
+    detectedVarBreakpoints = new mutable.Queue[Int]()
+    isCancel = false
     var solvingStateAfterUP: SolvingState = SolvingState.UNSOLVED
 
     varValue = new ArrayBuffer[State](numVariables+1)
@@ -56,10 +68,11 @@ abstract class Solver {
     solvingStateAfterUP
   }
 
-  //Post: retorna cert si la instancia es satisfactible, fals en c.c.
-  def solve(instance: Instance): Boolean = {
 
-    val solutionFound = time(i_solve(instance))
+  //Post: retorna cert si la instancia es satisfactible, fals en c.c.
+  def solve(instance: Instance, print: Boolean = true): Boolean = {
+
+    val solutionFound = time(i_solve(instance), print)
 
     if(solutionFound) solverState = SolvingState.SAT
     else solverState = SolvingState.UNSAT
@@ -74,6 +87,7 @@ abstract class Solver {
   protected def assign(literal: Int, reason: Reason, propagator: Int = -3): Unit
 
   private var callbackDecision: () => Int = ()=>initialMakeDecision
+
 
   def setDecisionCallback(decisionCallback: DecisionCallback): Unit ={
     callbackDecision = decisionCallback.makeDecisionCallback
@@ -90,6 +104,10 @@ abstract class Solver {
       if(varValue(i) == State.UNDEF)
         return i
     }
+    -1
+  }
+
+  def initialMakeDecisionVSIDS: Int={
     -1
   }
 
@@ -129,6 +147,11 @@ abstract class Solver {
     val positive = literal>0
     val state = varValue(math.abs(literal))
     !positive && state==State.TRUE || positive && state==State.FALSE
+  }
+
+  //Pot: retorna si el literal esta indefinit
+  protected def undifinedLiteral(literal : Int): Boolean ={
+    varValue(math.abs(literal)) == State.UNDEF
   }
 
   //Post: retorna cert si la clausula 'indexClause' esta satisfeta
@@ -192,11 +215,22 @@ abstract class Solver {
 
   def getTrailIndex(idx: Int): Int = trail(idx)
 
+  def resetEventManager() ={
+    eventManager.reset()
+  }
+
+  def getStatics() = {
+    (solverState, eventManager.getStatistics, trail.sortWith(math.abs(_) < math.abs(_)))
+  }
+
   //Prints
   def printEvents(compliantFormat: Boolean): Unit = eventManager.printEvents(compliantFormat)
 
   def printSolution(): Unit = {
     if(solverState==SolvingState.SAT) {
+      println("Decisions: " + eventManager.getStatistics._1)
+      println("Propagations: " + eventManager.getStatistics._2)
+      println("Conflicts: " + eventManager.getStatistics._3)
       print("v ")
       trail.sortWith(math.abs(_) < math.abs(_)).foreach(x => print(x + " "))
       println
@@ -208,22 +242,79 @@ abstract class Solver {
       throw new Exception("Internal error: incorrect or incomplete solution")
   }
 
-
-  def getStatics() = {
-    (solverState, eventManager.getStatistics, trail.sortWith(math.abs(_) < math.abs(_)))
-  }
-
-  def resetEventManager() ={
-    eventManager.reset()
-  }
-
   //https://biercoff.com/easily-measuring-code-execution-time-in-scala/
-  private def time[R](block: => R): R = {
+  private def time[R](block: => R, print: Boolean): R = {
     val t0 = System.currentTimeMillis()
     val result = block    // call-by-name
     val t1 = System.currentTimeMillis()
-    println("c Solved in: " + (t1 - t0) + "ms")
+    if(print) println("c Solved in: " + (t1 - t0) + "ms")
     result
+  }
+
+  def setCancel(cancel : Boolean) ={
+    this.isCancel = cancel
+  }
+
+  def getCancel() : Boolean ={
+    this.isCancel
+  }
+
+  def getInitialClausules() : Int ={
+    this.clauses.initialClauses.numClauses;
+  }
+
+  def setVsids(c : Boolean): Unit = {
+    vsids = c;
+  }
+
+  def setVSIDSPropiety(v : VSIDSPropiety): Unit = {
+    vsidsPropiety = v
+  }
+
+  def setHistorySolver(h: HistorySolver): Unit ={
+    historySolver = h
+  }
+
+  def getVariablesBreakpoint: mutable.HashSet[Int] = varBreakpoints
+
+  def setVariablesBreakpoint(v : mutable.HashSet[Int]): Unit = varBreakpoints = v
+
+  def getAllVariablesBreakpoints: IndexedSeq[Pair[Int, Boolean]] = {
+    if(numVariables != 0)
+      for(i <- 1 to numVariables)
+        yield new Pair(i, if (varBreakpoints.contains(i)) true else false)
+    else
+      IndexedSeq()
+  }
+
+  def addBreakpoints(variable: Int): Boolean ={
+    varBreakpoints.add(variable)
+  }
+
+  def removeBreakpoints(variable: Int): Boolean ={
+    varBreakpoints.remove(variable)
+  }
+
+  def isBreakpoint(variable: Int): Boolean = varBreakpoints.contains(variable)
+
+  def removeAllBreakpoints(): Unit = {
+    varBreakpoints = new mutable.HashSet[Int]()
+    detectedVarBreakpoints = new mutable.Queue[Int]()
+  }
+
+  def addDetectedBreakpoint(variable: Int): Unit = {
+    if(varBreakpoints.contains(variable))
+      detectedVarBreakpoints += variable
+  }
+
+  def foundBreakpoint: Boolean = detectedVarBreakpoints.nonEmpty
+
+  def getDetectedBreakpoints: mutable.Queue[Int] = detectedVarBreakpoints
+
+  def numDetectedBreakpoints: Int = detectedVarBreakpoints.size
+
+  def removeDetectedBreakpoints: Unit = {
+    detectedVarBreakpoints = new mutable.Queue[Int]()
   }
 
 }

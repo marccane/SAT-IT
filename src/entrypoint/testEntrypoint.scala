@@ -44,18 +44,20 @@ object testEntrypoint {
             val content = s"${filename};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
 
             if (line != content) {
+              var error = 0
               if(solvingState != statics._1.toString ){
-                println(s"The state of solution for the file ${filename} was ${solvingState} and found ${statics._1}")
-                errors += 1
+                println(s"The state of solution for the file ${filename} with ${solver_type} was ${solvingState} and found ${statics._1}")
+                error = 1
               }
               if (trailStr != statics._3.mkString(",")){
-                println(s"The trail of solution for the file ${filename} was ${trailStr} and found ${statics._3.mkString(",")}")
-                errors += 1
+                println(s"The trail of solution for the file ${filename} with ${solver_type} was ${trailStr} and found ${statics._3.mkString(",")}")
+                error = 1
               }
               if(numDecisions != statics._2._1.toString || numConflicts != statics._2._2.toString || numPropagations != statics._2._3.toString){
                 warning += 1
-                println(s"The decisions or conflicts or propagations for the file ${filename} and solver ${solver_type} was ${numDecisions} ${numConflicts} ${numPropagations} and found ${statics._2._1} ${statics._2._2} ${statics._2._3}")
+                println(s"The decisions or conflicts or propagations for the file ${filename} with ${solver_type} and solver ${solver_type} was ${numDecisions} ${numConflicts} ${numPropagations} and found ${statics._2._1} ${statics._2._2} ${statics._2._3}")
               }
+              errors += error
             }
           }
           catch {
