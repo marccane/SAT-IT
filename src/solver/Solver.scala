@@ -213,6 +213,10 @@ abstract class Solver {
     (solverState, eventManager.getStatistics, trail.sortWith(math.abs(_) < math.abs(_)))
   }
 
+  def resetEventManager() ={
+    eventManager.reset()
+  }
+
   //https://biercoff.com/easily-measuring-code-execution-time-in-scala/
   private def time[R](block: => R): R = {
     val t0 = System.currentTimeMillis()

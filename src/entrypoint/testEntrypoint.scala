@@ -1,58 +1,68 @@
 package entrypoint
 
 import java.io.File
-
-import solver.{CDCL, Backtracking, DPLL, Solver}
+import solver.{Backtracking, CDCL, DPLL, Solver}
 import structure.Instance
 
 object testEntrypoint {
 
-  val runAll = true
-  val mostrarEvents = false
-  //val solver = new DPLL
-  val solver = new CDCL
-  //val solver = new Backtracking
-
   def main(args: Array[String]): Unit = {
-
-    if(runAll) {
-      solveAll("/cnf/easy")
-      solveAll("/cnf/normal")
-      solveAll("/cnf/hard")
-    }
-    else{
-      val dimacs = new Instance
-      //dimacs.readDimacs("cnf/hard/NQueens25quad.cnf")
-      //dimacs.readDimacs("cnf/random_ksat.cnf")
-      //dimacs.readDimacs("cnf/hole6_d15.cnf")
-      //dimacs.readDimacs("cnf/easy/ex5.cnf")
-      //dimacs.readDimacs("cnf/hanoi4.cnf")
-      //dimacs.readDimacs("cnf/NQueens10quad.cnf")
-      //dimacs.readDimacs("cnf/hard/php10-15.cnf")
-      //dimacs.readDimacs("cnf/test.cnf")
-      println("Fitxer llegit")
-      println()
-
-      jarEntrypoint.solvePrint(dimacs, solver, mostrarEvents)
-    }
+    solveAll("test_cnf")
   }
 
   def solveAll(carpeta: String): Unit = {
-    val cnfFiles = new File(System.getProperty("user.dir") + carpeta).listFiles()
-      .filter(x => x.isFile && x.getName.endsWith(".cnf")).sortBy(_.length())
+    val testFiles = new File(System.getProperty("user.dir") + java.io.File.separator + carpeta).listFiles()
+      .filter(x => x.isFile && x.getName.endsWith(".test")).sortBy(_.length())
 
-    val instance = new Instance
-    for (file <- cnfFiles) {
-      val solver = new CDCL
-      println("Executant " + file.getName)
-      instance.readDimacs(file)
-      try{
-        jarEntrypoint.solvePrint(instance, solver, mostrarEvents)
-      }
-      catch{
-        case e: Exception => e.printStackTrace()
+    for (testFile <- testFiles) {
+
+      val lines = readFile(testFile.getPath)
+      for (line <- lines; if line != "") {
+
+        val Array(filename, solver_type, solvingState, numDecisions, numConflicts, numPropagations, trailStr) = line.split(';').map(_.trim)
+        println(filename)
+
+        var solver: Solver = null;
+        if (solver_type == "DPLL") {
+          solver = new DPLL
+        }
+        else if (solver_type == "BK") {
+          solver = new Backtracking
+        }
+        else {
+          solver = new CDCL
+        }
+
+        if(new File(testFile.getPath).exists) {
+
+          try {
+            val instance = new Instance
+            instance.readDimacs(filename)
+            solver.solve(instance)
+            val statics = solver.getStatics()
+            val content = s"${filename};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
+
+            if (line != content) {
+              println(s"The solution for the file ${filename} was expected:")
+              println(line)
+              println(s"Found:${content}")
+            }
+          }
+          catch {
+            case e: Exception => e.printStackTrace()
+          }
+        } else {
+          println(s"The file ${filename} was not found")
+        }
       }
     }
+  }
+
+  def readFile(filename: String): Seq[String] = {
+    val bufferedSource = io.Source.fromFile(filename)
+    val lines = (for (line <- bufferedSource.getLines()) yield line).toList
+    bufferedSource.close
+    lines
   }
 
 }
