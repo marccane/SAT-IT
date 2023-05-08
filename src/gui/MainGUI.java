@@ -766,13 +766,13 @@ public class MainGUI extends JFrame{
 
             if (propagator == -5) { //backtrack
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("backtrackLiteral"));
-                doc.insertString(doc.getLength(), "BK", doc.getStyle("superscript"));
+                doc.insertString(doc.getLength(), "k", doc.getStyle("superscript"));
             } else if (propagator == -2) { //unitpropinicial
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("propagationLiteral"));
-                doc.insertString(doc.getLength(), "UP", doc.getStyle("superscript"));
+                doc.insertString(doc.getLength(), "p", doc.getStyle("superscript"));
             } else if (propagator < 0) { //decisio
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("decisionLiteral"));
-                doc.insertString(doc.getLength(), "D", doc.getStyle("superscript"));
+                doc.insertString(doc.getLength(), "d", doc.getStyle("superscript"));
             } else if(propagator >= solver.getInitialClausules()){ //unitprop
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("propagationLiteralLearned"));
                 doc.insertString(doc.getLength(), propagator.toString(), doc.getStyle("superscript"));
