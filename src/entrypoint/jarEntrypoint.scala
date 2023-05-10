@@ -1,10 +1,15 @@
 package entrypoint
 
-import gui.MainGUI
+import java.io.File
+
+import gui.{MainGUI, VsidsOptionsWindow}
 import solver.{Backtracking, CDCL, DPLL, Solver}
-import structure.Instance
+import structure.{Instance, VSIDSPropiety}
+import util.Constants
 
 object jarEntrypoint {
+
+  var regexDouble: String = "(\\+|-)?[0-9]+(,[0-9]+)?"
 
   def main(args: Array[String]): Unit = {
     val argc = args.length
@@ -28,9 +33,11 @@ object jarEntrypoint {
   def handleCLIArguments(args: Array[String]): Unit ={
     val argc = args.length
     var error = false
+    var errorVSIDS = false
     var filename: String = null
     var solver: Solver = new CDCL
     var events = false
+    val vsidsPropietyDefault: VSIDSPropiety = new VSIDSPropiety(Constants.INITIAL_SCORE_VALUE, Constants.BONUS_SCORE_VALUE,Constants.INCREMENTED_BONUS_CONSTANT)
 
     if(argc == 1){
       error = true
@@ -52,16 +59,49 @@ object jarEntrypoint {
             solver = new Backtracking
           else if (actualArg == "-dpll")
             solver = new DPLL
-          else if (actualArg == "-cdcl")
+          else if (actualArg == "-cdcl_VSIDS"){
             solver = new CDCL
-          else if (actualArg == "-events")
+            solver.setVsids(true)
+
+            if(i + 1 == argc)
+              solver.setVSIDSPropiety(vsidsPropietyDefault)
+            else{
+              var param: List[Double] = List[Double]()
+              //Mirem si ens han entrat els tres paràmetres
+              if(argc <= i + 3)
+                errorVSIDS = true
+              else{
+                //Mirem si complexien han entrat els valors correctes
+                val aux = i
+                for(j <- 1 until 4; if !error){
+                  val value = args(aux + j)
+                  if(value.replaceAll(regexDouble,"") != "") {
+                    error = true
+                  } else {
+                    param :+= value.replaceAll(",","\\.").toDouble
+                  }
+                  i = i + 1
+                }
+              }
+              if(!error && !errorVSIDS)
+                solver.setVSIDSPropiety(new VSIDSPropiety(param.head, param(1), param(2)))
+              else
+                solver.setVSIDSPropiety(vsidsPropietyDefault)
+            }
+          }
+          else if (actualArg == "-cdcl") {
+            solver = new CDCL
+            solver.setVsids(false)
+          } else if (actualArg == "-events")
             events = true
           else error = true
 
           i += 1
         }
 
-        if(error) {
+        if(errorVSIDS)
+          Console.err.println("Error: Wrong number of VSIDS parameters" )
+        else if(error) {
           Console.err.println("Error: unknown parameter '" + args(i-1) + "'")
         }
       }
@@ -75,7 +115,12 @@ object jarEntrypoint {
       val instance = new Instance
       try {
         instance.readDimacs(filename)
-        solvePrint(instance, solver, events)
+        if(instance.numWarnings() != 0)
+          println("Warinings:\n" + instance.getWarningsText())
+        if(instance.numErrors() == 0)
+          solvePrint(instance, solver, events)
+        else
+          println("Errors:\n" + instance.getErrossText())
       }
       catch{
         case _: NumberFormatException   => Console.err.println("Error: Invalid file format. Please select a DIMACS CNF file")
@@ -83,6 +128,7 @@ object jarEntrypoint {
       }
     }
   }
+
 
   //No obrim la gui si el fitxer que ens passen no existeix (si el fitxer te un format erroni si que s'obre...)
   def handleGUIArguments(args: Array[String]): Unit ={
@@ -111,6 +157,12 @@ object jarEntrypoint {
   }
 
   def showHelp: Unit ={
+
+    var vsidsName : Array[String] = Array(VsidsOptionsWindow.titleInitialValue, VsidsOptionsWindow.titleIncrementValue,
+      VsidsOptionsWindow.titleProductValue)
+    val maxLength = vsidsName.maxBy(_.length).length
+
+    var regexInput = ": " + regexDouble + "\n"
     println("Usage:")
     println("   GUI mode:  java -jar SAT-IT.jar [input-file]")
     println("   CLI mode:  java -jar SAT-IT.jar -cli <input-file> [CLI-options]")
@@ -122,10 +174,38 @@ object jarEntrypoint {
     println("  -bt         use the backtracking solver")
     println("  -dpll       use the DPLL solver")
     println("  -cdcl       use the CDCL solver (default)")
+    println("  -cdcl_VSIDS use the CDCL solver with VSIDS (Variable State Independent Decaying Sum). The default values of VSIDS are:\n" +
+      "              " + vsidsName(0) +  getWhiteSpace(vsidsName(0), maxLength) + ": " + Constants.INITIAL_SCORE_VALUE.toString.replaceAll("\\.",",") + "\n" +
+      "              " + vsidsName(1) +  getWhiteSpace(vsidsName(1), maxLength) + ": " + Constants.BONUS_SCORE_VALUE.toString.replaceAll("\\.",",") + "\n"  +
+      "              " + vsidsName(2) +  getWhiteSpace(vsidsName(2), maxLength) + ": " + Constants.INCREMENTED_BONUS_CONSTANT.toString.replaceAll("\\.",","))
+
+    println("  -cdcl_VSIDS " + "<" + allName(vsidsName) + ">\n" +
+      "              use the CDCL solver with VSIDS parametres. Remember that the types of parameters are: \n" +
+      "              " + vsidsName(0) + getWhiteSpace(vsidsName(0), maxLength) +  regexInput +
+      "              " + vsidsName(1) + getWhiteSpace(vsidsName(1), maxLength) +  regexInput +
+      "              " + vsidsName(2) + getWhiteSpace(vsidsName(2), maxLength) +  regexInput )
     println("  -events     print all solver steps on exit")
     println
     println("If multiple solvers are selected the last one will be used.")
     //println("  -h, --help  Show help message")
   }
+
+  def getWhiteSpace(name : String, max: Int) : String = {
+    var string = ""
+    for(i <- name.length to max)
+      string = string.concat(" ")
+    string
+  }
+  def allName(names: Array[String]) : String ={
+    var string = ""
+    var separador = " "
+    for(s <- names) {
+      if(names.last.equals(s))
+        separador = ""
+      string = string.concat(s.replaceAll("\\s","") + separador)
+    }
+    string
+  }
+
 
 }

@@ -42,4 +42,9 @@ class EventManager {
     events.foreach({if(compliantFormat) print("c "); _.print})
   }
 
+  def reset() = {
+    events = new ArrayBuffer[Event]()
+    conflictIdx = 0
+  }
+
 }
