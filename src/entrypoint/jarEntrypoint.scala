@@ -1,6 +1,6 @@
 package entrypoint
 
-import gui.{MainGUI, VsidsOptionsWindow}
+import gui.{MainWindow, VsidsOptionsWindow}
 import solver.{Backtracking, CDCL, DPLL, Solver}
 import structure.{Instance, VSIDSProperty}
 import util.Constants
@@ -12,7 +12,7 @@ object jarEntrypoint {
   def main(args: Array[String]): Unit = {
     val argc = args.length
     if(argc == 0) //GUI mode sense fitxer
-      new MainGUI()
+      new MainWindow()
     else if(args(0) == "-cli" || args(0) == "-c"){ //CLI mode
       handleCLIArguments(args)
     }
@@ -134,7 +134,7 @@ object jarEntrypoint {
       Console.err.println("Error: file " + args(0) + " doesn't exist")
     }
     else if(new java.io.File(args(0)).isFile){
-      new MainGUI(args(0))
+      new MainWindow(args(0))
     }
     else{
       Console.err.println("Error: unknown file error")

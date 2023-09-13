@@ -44,65 +44,65 @@ class EventHandler {
         boolean stopOnEvents(int solverAction);
     }
 
-    static void btnDecisionActionHandler(Solver solver, MainGUI mainGUI){
-        int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction == SOLVER_UNITPROP);
+    static void btnDecisionActionHandler(Solver solver, MainWindow mainWindow){
+        int res = runSolverUntil(solver, mainWindow,(int solverAction) -> solverAction == SOLVER_UNITPROP);
         if(res != CANCEL_DECISION) {
-            mainGUI.failAction(res);
-            if (!mainGUI.isBacktracking()) mainGUI.setDecision(false);
+            mainWindow.failAction(res);
+            if (!mainWindow.isBacktracking()) mainWindow.setDecision(false);
         }
     }
 
-    static void btnUnitPropActionHandler(Solver solver, MainGUI mainGUI){
-        int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction == SOLVER_DECISION);
-        if(res != CANCEL_DECISION) mainGUI.failAction(res);
+    static void btnUnitPropActionHandler(Solver solver, MainWindow mainWindow){
+        int res = runSolverUntil(solver, mainWindow,(int solverAction) -> solverAction == SOLVER_DECISION);
+        if(res != CANCEL_DECISION) mainWindow.failAction(res);
     }
 
-    static void btnConflictActionHandler(Solver solver, MainGUI mainGUI){
-        int res = runSolverUntil(solver,mainGUI,(int sAct) -> sAct != SOLVER_BACKTRACK && sAct != SOLVER_CONFLICT
+    static void btnConflictActionHandler(Solver solver, MainWindow mainWindow){
+        int res = runSolverUntil(solver, mainWindow,(int sAct) -> sAct != SOLVER_BACKTRACK && sAct != SOLVER_CONFLICT
                 && sAct != SOLVER_END);
-        if(res != CANCEL_DECISION) mainGUI.failAction(res);
+        if(res != CANCEL_DECISION) mainWindow.failAction(res);
     }
 
-    static void btnResolveActionHandler(Solver solver, MainGUI mainGUI){
-        int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction == SOLVER_UNITPROP);
+    static void btnResolveActionHandler(Solver solver, MainWindow mainWindow){
+        int res = runSolverUntil(solver, mainWindow,(int solverAction) -> solverAction == SOLVER_UNITPROP);
         if(res != CANCEL_DECISION) {
-            mainGUI.initButtons();
+            mainWindow.initButtons();
             //Amb CDCL i DPLL hem de fer UP
-            if (!mainGUI.isBacktracking()) mainGUI.setDecision(false);
+            if (!mainWindow.isBacktracking()) mainWindow.setDecision(false);
         }
     }
 
-    static void btnEndActionHandler(Solver solver, MainGUI mainGUI){
-        int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction != SOLVER_END);
-        if(res != CANCEL_DECISION) mainGUI.initButtons();
+    static void btnEndActionHandler(Solver solver, MainWindow mainWindow){
+        int res = runSolverUntil(solver, mainWindow,(int solverAction) -> solverAction != SOLVER_END);
+        if(res != CANCEL_DECISION) mainWindow.initButtons();
     }
 
-    private static int runSolverUntil(Solver solver, MainGUI mainGUI, ButtonConfig bc){
+    private static int runSolverUntil(Solver solver, MainWindow mainWindow, ButtonConfig bc){
         Enumeration.Value solverState = solver.solverState(); // 0->unsolved, 1->sat, 2->unsat
         int solverAction = -1;
         if(solverState == SolvingState.UNSOLVED()){ //si no hem acabat...
             do{
-                solverAction = mainGUI.solverStep();
+                solverAction = mainWindow.solverStep();
                 if(solver.foundBreakpoint())
-                    showBreakpoints(solver, mainGUI, mainGUI.getPanel());
+                    showBreakpoints(solver, mainWindow, mainWindow.getPanel());
             } while(bc.stopOnEvents(solverAction) && solverAction != CANCEL_DECISION);
 
             if(solverAction == SOLVER_CONFLICT)
-                mainGUI.focusOnConflictClause();
+                mainWindow.focusOnConflictClause();
             else if(solverAction == SOLVER_BACKJUMP)
-                mainGUI.focusOnLearnedClause();
+                mainWindow.focusOnLearnedClause();
             else if(solverAction == SOLVER_END)
-                solverShowResult(mainGUI, solver, mainGUI.getPanel());
+                solverShowResult(mainWindow, solver, mainWindow.getPanel());
             else if(solverAction == CANCEL_DECISION)
                 solver.setCancel(false);
         }
-        else solverShowResult(mainGUI, solver, mainGUI.getPanel());
-        mainGUI.updateGUI();
+        else solverShowResult(mainWindow, solver, mainWindow.getPanel());
+        mainWindow.updateGUI();
         return solverAction;
     }
 
-    private static void solverShowResult(MainGUI mainGUI, Solver solver, JPanel jpanel){
-        mainGUI.setEnableKeyBoard(false);
+    private static void solverShowResult(MainWindow mainWindow, Solver solver, JPanel jpanel){
+        mainWindow.setEnableKeyBoard(false);
         Tuple3 tuple3 = solver.eventManager().getStatistics();
         int decisions = (int)tuple3._1();
         int propagations = (int)tuple3._2();
@@ -110,11 +110,11 @@ class EventHandler {
         JOptionPane.showMessageDialog(jpanel, (solver.solverState()==SolvingState.SAT()?"SAT":"UNSAT") +
                 "\n\nDecisions: " + decisions + "\nPropagations: " + propagations + "\nConflicts: " + conflicts,
                 "Summary", JOptionPane.INFORMATION_MESSAGE);
-        mainGUI.setEnableKeyBoard(true);
+        mainWindow.setEnableKeyBoard(true);
     }
 
-    private static void showBreakpoints(Solver solver, MainGUI mainGUI, JPanel jpanel) {
-        mainGUI.setEnableKeyBoard(false);
+    private static void showBreakpoints(Solver solver, MainWindow mainWindow, JPanel jpanel) {
+        mainWindow.setEnableKeyBoard(false);
         scala.collection.mutable.Queue<Object> detected = solver.getDetectedBreakpoints();
         Object[] data = new Object[detected.size() + 1];
         data[0] = "The following variables have been assigned:";
@@ -135,7 +135,7 @@ class EventHandler {
 
         JOptionPane.showMessageDialog(jpanel,scrollPane,"Breakpoint", JOptionPane.INFORMATION_MESSAGE);
         solver.removeDetectedBreakpoints();
-        mainGUI.setEnableKeyBoard(true);
+        mainWindow.setEnableKeyBoard(true);
     }
 
     private static class DisableSelect extends DefaultListSelectionModel{

@@ -22,7 +22,7 @@ class DPLL extends ViewableSolver with TwoWatchedLiteralSolver{
     solvingStateAfterUP
   }
 
-  //No cridar directament, cridar MainGUI.SolveStep()
+  //No cridar directament, cridar MainWindow.SolveStep()
   override def guiSolveStep: Int = {
 
     if(solverState == SolvingState.UNSOLVED) { //si no hem acabat...

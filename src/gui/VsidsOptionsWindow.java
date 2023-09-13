@@ -18,9 +18,9 @@ public class VsidsOptionsWindow extends JFrame {
     public static String titleIncrementValue = "Bonus";
     public static String titleProductValue   = "Incremented Bonus Constant";
 
-    VsidsOptionsWindow(MainGUI mainGUI){
+    VsidsOptionsWindow(MainWindow mainWindow){
         super("VSIDS OPTIONS");
-        add(new FrameVsids(mainGUI));
+        add(new FrameVsids(mainWindow));
         this.setIconImages(Constants.getLogos());
         setResizable(false);
         pack();
@@ -39,11 +39,11 @@ public class VsidsOptionsWindow extends JFrame {
         private JFormattedTextField  numIncrementScoreField;
         private JFormattedTextField  numProductValueField;
 
-        FrameVsids(MainGUI mainGUI){
+        FrameVsids(MainWindow mainWindow){
             super(new BorderLayout());
             //Inicialitzem valors
 
-            VSIDSProperty vsidsProperty = mainGUI.getVsidsProperty();
+            VSIDSProperty vsidsProperty = mainWindow.getVsidsProperty();
 
             numInitialScore = vsidsProperty.getStartScore().toDouble();
             numIncrementScore = vsidsProperty.getInitialAddScore().toDouble();
@@ -100,9 +100,9 @@ public class VsidsOptionsWindow extends JFrame {
                 String startScore = normalizeText(fields.get(0).getText());
                 String addScore = normalizeText(fields.get(1).getText());
                 String productScore = normalizeText(fields.get(2).getText());
-                mainGUI.setVsidsProperty(new VSIDSProperty(new scala.math.BigDecimal(new BigDecimal(startScore)), new scala.math.BigDecimal(new BigDecimal(addScore)), new scala.math.BigDecimal(new BigDecimal(productScore))));
+                mainWindow.setVsidsProperty(new VSIDSProperty(new scala.math.BigDecimal(new BigDecimal(startScore)), new scala.math.BigDecimal(new BigDecimal(addScore)), new scala.math.BigDecimal(new BigDecimal(productScore))));
                 dispose();
-                if (mainGUI.getSolverType() == MainGUI.SolverType.CDCL_VSIDS) mainGUI.resetGUI();
+                if (mainWindow.getSolverType() == MainWindow.SolverType.CDCL_VSIDS) mainWindow.resetGUI();
             });
 
             fieldPane.add(btnSave);

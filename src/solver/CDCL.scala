@@ -77,7 +77,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
   }
 
-  //No cridar directament, cridar MainGUI.SolveStep()
+  //No cridar directament, cridar MainWindow.SolveStep()
   override def guiSolveStep: Int = {
 
     if(solverState == SolvingState.UNSOLVED) {

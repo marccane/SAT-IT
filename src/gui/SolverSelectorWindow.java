@@ -10,7 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 
 class SolverSelectorWindow extends JFrame {
-    SolverSelectorWindow(MainGUI mainGUI, Solver solver){
+    SolverSelectorWindow(MainWindow mainWindow, Solver solver){
         super("Solver selector ");
         this.setIconImages(Constants.getLogos());
         JPanel jPanel = new JPanel();
@@ -39,9 +39,9 @@ class SolverSelectorWindow extends JFrame {
         JButton btnSave = new JButton("Save");
         btnSave.addActionListener(stub -> {
             boolean loadInstance = true;
-            if(mainGUI.instanceLoaded){
+            if(mainWindow.instanceLoaded){
                 int confirmed = JOptionPane.showConfirmDialog(this,
-                        MainGUI.confirmResetMessage, "Confirmation",
+                        MainWindow.confirmResetMessage, "Confirmation",
                         JOptionPane.YES_NO_OPTION);
 
                 if(confirmed == JOptionPane.NO_OPTION)
@@ -49,16 +49,16 @@ class SolverSelectorWindow extends JFrame {
             }
 
             if(loadInstance){
-                MainGUI.SolverType solverType;
-                if(RBbacktracking.isSelected()) solverType = MainGUI.SolverType.Backtracking;
-                else if(RBdpll.isSelected()) solverType = MainGUI.SolverType.DPLL;
-                else if(RBcdcl.isSelected()) solverType = MainGUI.SolverType.CDCL;
-                else if(RBcdclVsids.isSelected()) solverType = MainGUI.SolverType.CDCL_VSIDS;
+                MainWindow.SolverType solverType;
+                if(RBbacktracking.isSelected()) solverType = MainWindow.SolverType.Backtracking;
+                else if(RBdpll.isSelected()) solverType = MainWindow.SolverType.DPLL;
+                else if(RBcdcl.isSelected()) solverType = MainWindow.SolverType.CDCL;
+                else if(RBcdclVsids.isSelected()) solverType = MainWindow.SolverType.CDCL_VSIDS;
                 else throw new RuntimeException("unknown solver");
-                mainGUI.setSolverType(solverType);
-                mainGUI.resetGUI();
-                mainGUI.changeSolverTitle();
-                mainGUI.setViewScoreListEnable(solverType == MainGUI.SolverType.CDCL_VSIDS);
+                mainWindow.setSolverType(solverType);
+                mainWindow.resetGUI();
+                mainWindow.changeSolverTitle();
+                mainWindow.setViewScoreListEnable(solverType == MainWindow.SolverType.CDCL_VSIDS);
                 dispose();
             }
         });

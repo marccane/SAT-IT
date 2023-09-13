@@ -10,8 +10,8 @@ class VsidsScoreWindow extends JFrame {
 
     private JList<LitScore> list;
 
-    VsidsScoreWindow(MainGUI mainGui, CDCL cdcl, String title){
-        super("VSIDS SCORES " + title.replaceFirst(MainGUI.APP_NAME + " .* ", ""));
+    VsidsScoreWindow(MainWindow mainWindow, CDCL cdcl, String title){
+        super("VSIDS SCORES " + title.replaceFirst(MainWindow.APP_NAME + " .* ", ""));
         this.setIconImages(Constants.getLogos());
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
@@ -49,7 +49,7 @@ class VsidsScoreWindow extends JFrame {
         add(jPanel);
         setResizable(true);
         setVisible(true);
-        mainGui.setVsidsScoreWindow(this);
+        mainWindow.setVsidsScoreWindow(this);
     }
 
     void setCellRenderList(CDCL cdcl){

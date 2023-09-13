@@ -27,21 +27,21 @@ import static gui.EventHandler.*;
 import static gui.ClauseListLiteralHighlight.createListRenderer;
 import static util.Constants.*;
 
-public class MainGUI extends JFrame{
+public class MainWindow extends JFrame{
 
-    public MainGUI() {
+    public MainWindow() {
         super(APP_NAME);
         this.setFocusTraversalKeysEnabled(false);
         handleParametersAndInit("", null);
     }
 
-    public MainGUI(String cnfFilePath){
+    public MainWindow(String cnfFilePath){
         super();
         this.setTitle(getTitle(cnfFilePath));
         handleParametersAndInit(cnfFilePath, null);
     }
 
-    public MainGUI(String cnfFilePath, SolverType st){
+    public MainWindow(String cnfFilePath, SolverType st){
         super();
         this.setTitle(getTitle(cnfFilePath));
         handleParametersAndInit(cnfFilePath, st);
@@ -492,7 +492,7 @@ public class MainGUI extends JFrame{
 
             JMenuItem aboutMenuItem = new JMenuItem("About");
             aboutMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
-                    "SAT-IT " + MainGUI.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
+                    "SAT-IT " + MainWindow.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
                     "About", JOptionPane.INFORMATION_MESSAGE));
             helpMenu.add(aboutMenuItem);
 
@@ -500,12 +500,12 @@ public class MainGUI extends JFrame{
         viewScoreList = new JMenuItem("Score List");
         viewScoreList.addActionListener(stub -> new VsidsScoreWindow(this, (CDCL) solver, getTitle()));
 
-        MainGUI mainGUI = this;
+        MainWindow mainWindow = this;
         class MouseAdapterBreakPoint extends MouseAdapter{
             public void mouseClicked(MouseEvent evt) {
                 boolean notVisible = breakpointSelectWindow == null || !breakpointSelectWindow.isVisible();
                 if (evt.getClickCount() == 1 && notVisible){
-                    new BreakpointSelectWindow(mainGUI, solver);
+                    new BreakpointSelectWindow(mainWindow, solver);
                 }
                 else if(! notVisible){
                     breakpointSelectWindow.toFront();
@@ -915,7 +915,7 @@ public class MainGUI extends JFrame{
     private static final boolean REDO = false;
 
     public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(MainGUI::new);
+        java.awt.EventQueue.invokeLater(MainWindow::new);
     }
 
 }

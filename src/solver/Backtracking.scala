@@ -16,7 +16,7 @@ class Backtracking extends ViewableSolver {
     solvingStateAfterUP
   }
 
-  //No cridar directament, cridar MainGUI.SolveStep()
+  //No cridar directament, cridar MainWindow.SolveStep()
   override def guiSolveStep: Int = {
     val candidatesExist = ()=> trail.length<numVariables || trail.length==numVariables && assignmentReason.contains(Reason.DECISION)
     val clausesArr = clauses.initialClauses.getClauseList

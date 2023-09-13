@@ -11,7 +11,7 @@ class BreakpointSelectWindow extends JFrame {
 
     private Solver solver;
 
-    BreakpointSelectWindow( MainGUI mainGUI, Solver solverInit){
+    BreakpointSelectWindow(MainWindow mainWindow, Solver solverInit){
         super("Breakpoints");
         this.setIconImages(Constants.getLogos());
         this.solver = solverInit;
@@ -44,7 +44,7 @@ class BreakpointSelectWindow extends JFrame {
         });
 
         JButton clearAll = new JButton("Clear All");
-        clearAll.addActionListener(stub ->clearAll(mainGUI, this, model));
+        clearAll.addActionListener(stub ->clearAll(mainWindow, this, model));
         JScrollPane jScrollPane = new JScrollPane(list);
         jPanel.add(jScrollPane, BorderLayout.CENTER);
         if(model.size() != 0)
@@ -58,7 +58,7 @@ class BreakpointSelectWindow extends JFrame {
         add(jPanel);
         setResizable(true);
         setVisible(true);
-        mainGUI.setBreakpointSelectWindow(this);
+        mainWindow.setBreakpointSelectWindow(this);
     }
 
     private void initPairDefaultListModel(DefaultListModel<Tuple2<Integer, Boolean>> model) {
@@ -74,8 +74,8 @@ class BreakpointSelectWindow extends JFrame {
         this.solver = solver;
     }
 
-    private void clearAll(MainGUI mainGUI, JFrame jframe, DefaultListModel<Tuple2<Integer, Boolean>> model){
-        mainGUI.setEnableKeyBoard(false);
+    private void clearAll(MainWindow mainWindow, JFrame jframe, DefaultListModel<Tuple2<Integer, Boolean>> model){
+        mainWindow.setEnableKeyBoard(false);
         int confirmed = JOptionPane.showConfirmDialog(jframe,
                 "Are you sure you want to remove all breakpoints?", "Confirmation",
                 JOptionPane.YES_NO_OPTION);
@@ -84,7 +84,7 @@ class BreakpointSelectWindow extends JFrame {
             model.clear();
             initPairDefaultListModel(model);
         }
-        mainGUI.setEnableKeyBoard(true);
+        mainWindow.setEnableKeyBoard(true);
     }
 
     static class BreakpointListRender extends JLabel implements ListCellRenderer<Tuple2<Integer, Boolean>> {
