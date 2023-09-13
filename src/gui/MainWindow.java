@@ -492,7 +492,7 @@ public class MainWindow extends JFrame{
 
             JMenuItem aboutMenuItem = new JMenuItem("About");
             aboutMenuItem.addActionListener(stub -> JOptionPane.showMessageDialog(this,
-                    "SAT-IT " + MainWindow.VERSION + "\n\nAuthor: Marc Cané Salamià\nTutors: Mateu Villaret & Jordi Coll",
+                    "SAT-IT " + MainWindow.VERSION + "\n\nAuthors: Marc Cané Salamià & Marc Rojo Campillos\nTutors: Mateu Villaret & Jordi Coll",
                     "About", JOptionPane.INFORMATION_MESSAGE));
             helpMenu.add(aboutMenuItem);
 
@@ -909,7 +909,7 @@ public class MainWindow extends JFrame{
     private boolean autoFocusOnLearnedOption = true;
 
     static final String APP_NAME = "SAT-IT";
-    private static final String VERSION = "0.314159265";
+    private static final String VERSION = "0.4";
     static final String confirmResetMessage = "You will lose the solving progress. Are you sure?";
     private static final boolean UNDO = true;
     private static final boolean REDO = false;

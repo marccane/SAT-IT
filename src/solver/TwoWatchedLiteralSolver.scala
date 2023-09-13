@@ -92,7 +92,6 @@ trait  TwoWatchedLiteralSolver extends Solver{
       //Buscar clausules on apareix -lit, s'hauran de comprovar
       val watchListFalse = if(lit<0) watchListPos(atom) else watchListNeg(atom)
 
-      //val watchListFalseCopy = watchListFalse.toArray //aixo no podia afectar en res, nomes es va usar per saltar un bug
       for(clauseIndex <- watchListFalse.toArray){
         val clause = clauses.getClause(clauseIndex).getClause
 

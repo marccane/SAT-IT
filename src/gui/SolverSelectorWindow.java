@@ -12,9 +12,10 @@ import java.awt.*;
 class SolverSelectorWindow extends JFrame {
     SolverSelectorWindow(MainWindow mainWindow, Solver solver){
         super("Solver selector ");
-        this.setIconImages(Constants.getLogos());
+        setIconImages(Constants.getLogos());
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
+        setResizable(false);
 
         JLabel chooseLabel = new JLabel("Choose a solver:");
         jPanel.add(chooseLabel);

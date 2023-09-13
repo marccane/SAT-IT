@@ -255,15 +255,12 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
   private def calculateBackjumpLevel(clauseAct: Set[Int], newClause: Clause, newClauseIndex: Int): Int ={
     var trailIdx = 0
-    var penultimateLiteral = 0
     var learntClause = clauseAct
 
     //mentre la nova clausula tingui mes dun literal sense valor...
     while (learntClause.size > 1) { //si es TLA no entrarem aqui
       val lit = trail(trailIdx)
       if (learntClause.contains(-lit)) {
-        if(learntClause.size==2)
-          penultimateLiteral = lit
         learntClause -= -lit
       }
       trailIdx += 1
@@ -275,21 +272,11 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
       trailIdx += 1
 
     val litToForceProp = learntClause.head
-
     backjumpDelay = new BackjumpDelay(litToForceProp,newClauseIndex)
 
-    //FIXME: molt probablement el bug del 2wl sera aqui
     //actualitzar watched lits per tenir watched el literal que passarà a true
     val indexForcedLit = newClause.getClause.indexOf(litToForceProp)
-    /*
-    if(indexForcedLit != 0) //si l'ultim literal del nivell de decisio no esta watched a la primera posicio li posem
-      swapWL(newClause,newClauseIndex,0,indexForcedLit)
-
-    val indexPenultimateLit = newClause.getClause.indexOf(-penultimateLiteral)
-    if(indexForcedLit != 1)
-      swapWL(newClause,newClauseIndex,1,indexPenultimateLit)*/
-
-    if(indexForcedLit>1) //si l'ultim literal del nivell de decisio no esta watched li posem
+    if(indexForcedLit > 1) //si l'ultim literal del nivell de decisio no esta watched li posem
       swapWL(newClause,newClauseIndex,0,indexForcedLit)
 
     secondWlearned(indexForcedLit, newClause, newClauseIndex)

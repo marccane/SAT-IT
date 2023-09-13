@@ -57,7 +57,7 @@ object generatorTestEntrypoint {
         }
 
         solver.solve(instance)
-        val statics = solver.getStatistics()
+        val statics = solver.getStatistics
         val content = s".${file.getPath.substring(System.getProperty("user.dir").length)};$solver_type;${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
         bw.append(content + System.lineSeparator())
       }
