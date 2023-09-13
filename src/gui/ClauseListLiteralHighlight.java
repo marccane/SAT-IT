@@ -7,12 +7,10 @@ import javax.swing.*;
 import java.awt.*;
 
 //https://www.logicbig.com/tutorials/java-swing/list-filter-html-highlighting.html
-public class ClauseListLiteralHighlight {
+class ClauseListLiteralHighlight {
 
-    public static ListCellRenderer<? super Clause> createListRenderer(Object[] varValue, int numInitialClauses) {
+    static ListCellRenderer<? super Clause> createListRenderer(Object[] varValue, int numInitialClauses) {
         return new DefaultListCellRenderer() {
-            private Color background = new Color(0, 100, 255, 15);
-            private Color defaultBackground = (Color) UIManager.get("List.background");
             private Color satisfied = new Color(0, 255, 0, 30);
             private Color contradiction = new Color(255, 0, 0, 30);
 
@@ -20,14 +18,11 @@ public class ClauseListLiteralHighlight {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                //this.setFont(this.getFont().deriveFont(14f).deriveFont(Font.PLAIN));
 
                 Clause clause = (Clause) value;
                 boolean learntClause = index >= numInitialClauses;
                 String displayText = LiteralHighlighter.highlightText(clause, varValue, index, learntClause);
                 setText(displayText);
-
-                //if (!isSelected) setBackground(index % 2 == 0 ? background : defaultBackground);
 
                 int clauseState = getClauseState(clause, varValue);
                 if(clauseState == -1) setBackground(contradiction);
@@ -66,7 +61,7 @@ public class ClauseListLiteralHighlight {
             int[] litArray = clause.getClauseArray();
             StringBuilder sb = new StringBuilder();
 
-            sb.append("<html>" + String.format(learntClause? HighLightLearnt :HighLightDefault, index) + ": ");
+            sb.append("<html>").append(String.format(learntClause ? HighLightLearnt : HighLightDefault, index)).append(": ");
             for (int lit: litArray) {
                 boolean trueLit = SolverHelper.trueLiteral(lit, varValue);
                 boolean falseLit = SolverHelper.falseLiteral(lit, varValue);

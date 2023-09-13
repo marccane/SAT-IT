@@ -4,13 +4,12 @@ import solver.CDCL;
 import solver.Backtracking;
 import solver.DPLL;
 import solver.Solver;
-import sun.applet.Main;
 import util.Constants;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class SolverSelectorWindow extends JFrame {
+class SolverSelectorWindow extends JFrame {
     SolverSelectorWindow(MainGUI mainGUI, Solver solver){
         super("Solver selector ");
         this.setIconImages(Constants.getLogos());
@@ -38,7 +37,6 @@ public class SolverSelectorWindow extends JFrame {
         jPanel.add(RBbacktracking);
 
         JButton btnSave = new JButton("Save");
-        //btnSave.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         btnSave.addActionListener(stub -> {
             boolean loadInstance = true;
             if(mainGUI.instanceLoaded){
@@ -60,8 +58,7 @@ public class SolverSelectorWindow extends JFrame {
                 mainGUI.setSolverType(solverType);
                 mainGUI.resetGUI();
                 mainGUI.changeSolverTitle();
-                if(solverType != MainGUI.SolverType.CDCL_VSIDS) mainGUI.setViewScoreListEnable(false);
-                else mainGUI.setViewScoreListEnable(true);
+                mainGUI.setViewScoreListEnable(solverType == MainGUI.SolverType.CDCL_VSIDS);
                 dispose();
             }
         });

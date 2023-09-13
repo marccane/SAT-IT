@@ -2,25 +2,24 @@ package gui;
 
 import solver.CDCL;
 import solver.Solver;
-import structure.litScore;
-import util.SolverHelper;
+import structure.LitScore;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 
-public class ScoreLitRender extends JLabel implements ListCellRenderer<litScore> {
+class ScoreLitRender extends JLabel implements ListCellRenderer<LitScore> {
 
-    Solver solver;
-    public static Border borderStyle =  BorderFactory.createLineBorder(Color.blue, 1);
+    private Solver solver;
+    private static Border borderStyle =  BorderFactory.createLineBorder(Color.blue, 1);
 
     ScoreLitRender(Solver s){
         solver = s;
     }
 
     @Override
-    public Component getListCellRendererComponent(JList<? extends litScore> list, litScore ls, int index,
-    boolean isSelected, boolean cellHasFocus) {
+    public Component getListCellRendererComponent(JList<? extends LitScore> list, LitScore ls, int index,
+                                                  boolean isSelected, boolean cellHasFocus) {
 
         int maxLengthLit = 0;
         int maxLengthScore = 0;
@@ -34,14 +33,11 @@ public class ScoreLitRender extends JLabel implements ListCellRenderer<litScore>
         else
             setBorder(null);
 
-
         setFont(new Font("Consolas", Font.BOLD, 14));
-        //setText(ls.toStringHtml(solver != null ? solver.numVariables() : 0));
         setText(ls.toString(maxLengthLit, maxLengthScore));
 
-        if(!solver.undifinedLiteral(ls.lit())) {
+        if(!solver.undefinedLiteral(ls.lit())) {
             setOpaque(true);
-            //setBackground(new Color(117, 129, 209, 40));
             setBackground(new Color(0, 255, 0, 30));
         }
         else{

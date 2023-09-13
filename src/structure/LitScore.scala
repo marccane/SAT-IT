@@ -1,12 +1,11 @@
 package structure
 
-import util.decimalPrecision
+import util.DecimalPrecision
 
-class litScore(var lit : Int, var score : BigDecimal, var signe : Int) extends Ordered[litScore]{
-  def setSign(s: Int): Unit = signe = s
+class LitScore(var lit : Int, var score : BigDecimal, var sign : Int) extends Ordered[LitScore]{
+  def setSign(s: Int): Unit = sign = s
 
-
-  override def compare(that: litScore): Int = {
+  override def compare(that: LitScore): Int = {
     if(score == that.score)
       if(that.lit == lit) 0
       else if(that.lit - lit < 0) -1
@@ -17,22 +16,22 @@ class litScore(var lit : Int, var score : BigDecimal, var signe : Int) extends O
   }
 
   override def toString: String = {
-    lit + " : " +  score + " (" + (if(signe < 0) "-" else "+") + ")"
+    lit + " : " +  score + " (" + (if(sign < 0) "-" else "+") + ")"
   }
 
   def toString(maxLengthLit : Int, maxLengthScore : Int): String = {
     var newLit = lit.toString
-    var newScore = decimalPrecision.trunc(score,2).toString
+    var newScore = DecimalPrecision.trunc(score,2).toString
 
     for(_ <- newLit.length until maxLengthLit) newLit = " ".concat(newLit)
     for(_ <- newScore.length until maxLengthScore) newScore = " ".concat(newScore)
 
-    newLit + " : " +  newScore + " (" + (if(signe < 0) "-" else "+") + ")"
+    newLit + " : " +  newScore + " (" + (if(sign < 0) "-" else "+") + ")"
   }
 
   def getLiteral() : Int = lit
 
   def getScore() : BigDecimal = score
 
-  def getLiteralSign() : Int = if(signe < 0) -lit else lit
+  def getLiteralSign() : Int = if(sign < 0) -lit else lit
 }

@@ -1,13 +1,13 @@
 package gui;
 
-import javafx.util.Pair;
+import scala.Tuple2;
 import scala.collection.Iterator;
 import solver.Solver;
 import util.Constants;
 import javax.swing.*;
 import java.awt.*;
 
-public class BreakpointSelectWindow extends JFrame {
+class BreakpointSelectWindow extends JFrame {
 
     private Solver solver;
 
@@ -18,8 +18,7 @@ public class BreakpointSelectWindow extends JFrame {
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BorderLayout());
 
-
-        DefaultListModel<Pair<Integer, Boolean>> model = new DefaultListModel<>();
+        DefaultListModel<Tuple2<Integer, Boolean>> model = new DefaultListModel<>();
         initPairDefaultListModel(model);
 
         JList list = new JList(model);
@@ -34,13 +33,13 @@ public class BreakpointSelectWindow extends JFrame {
                 else {
                     super.addSelectionInterval(index0, index1);
                 }
-                Pair<Integer, Boolean> value = model.get(index1);
-                Boolean isBreakpoint = !value.getValue();
-                model.set(index1, new Pair<>(value.getKey(), isBreakpoint));
+                Tuple2<Integer, Boolean> value = model.get(index1);
+                Boolean isBreakpoint = !value._2();
+                model.set(index1, new Tuple2<>(value._1(), isBreakpoint));
                 if(isBreakpoint)
-                    solver.addBreakpoints(value.getKey());
+                    solver.addBreakpoints(value._1());
                 else
-                    solver.removeBreakpoints(value.getKey());
+                    solver.removeBreakpoints(value._1());
             }
         });
 
@@ -62,11 +61,12 @@ public class BreakpointSelectWindow extends JFrame {
         mainGUI.setBreakpointSelectWindow(this);
     }
 
-    private void initPairDefaultListModel(DefaultListModel<Pair<Integer, Boolean>> model) {
-        Iterator<Pair<Object, Object>> it = solver.getAllVariablesBreakpoints().iterator();
+    private void initPairDefaultListModel(DefaultListModel<Tuple2<Integer, Boolean>> model) {
+        Iterator<Tuple2<Object, Object>> it = solver.getAllVariablesBreakpoints().iterator();
         while (it.hasNext()){
-            Pair<Object, Object> p = it.next();
-            model.addElement(new Pair<>((Integer) p.getKey(), (Boolean) p.getValue()));
+            Tuple2<Object, Object> p = it.next();
+            Tuple2<Integer, Boolean> p2 = new Tuple2<>((Integer)p._1(), (Boolean)p._2());
+            model.addElement(p2);
         }
     }
 
@@ -74,7 +74,7 @@ public class BreakpointSelectWindow extends JFrame {
         this.solver = solver;
     }
 
-    public void clearAll(MainGUI mainGUI, JFrame jframe, DefaultListModel<Pair<Integer, java.lang.Boolean>> model){
+    private void clearAll(MainGUI mainGUI, JFrame jframe, DefaultListModel<Tuple2<Integer, Boolean>> model){
         mainGUI.setEnableKeyBoard(false);
         int confirmed = JOptionPane.showConfirmDialog(jframe,
                 "Are you sure you want to remove all breakpoints?", "Confirmation",
@@ -85,18 +85,16 @@ public class BreakpointSelectWindow extends JFrame {
             initPairDefaultListModel(model);
         }
         mainGUI.setEnableKeyBoard(true);
-
     }
 
+    static class BreakpointListRender extends JLabel implements ListCellRenderer<Tuple2<Integer, Boolean>> {
 
-    class BreakpointListRender extends JLabel implements ListCellRenderer<Pair<Integer, Boolean>> {
-
-        public Component getListCellRendererComponent(JList<? extends Pair<Integer, Boolean>> list, Pair<Integer, Boolean> value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends Tuple2<Integer, Boolean>> list, Tuple2<Integer, Boolean> value, int index, boolean isSelected, boolean cellHasFocus) {
             this.setHorizontalTextPosition(JLabel.RIGHT);
-            this.setText(value.getKey().toString());
+            this.setText(value._1().toString());
             this.setFont(new Font(this.getFont().getName(), this.getFont().getStyle(), 14));
             this.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-            if(value.getValue()){
+            if(value._2()){
                 setOpaque(true);
                 setBackground(new Color(255, 0, 0, 30));
                 this.setIcon(new ImageIcon(this.getClass().getResource("/logo/RedBreakpoint.png"),"Breakpoint"));

@@ -1,12 +1,11 @@
 package solver
 
 import gui.DecisionCallback
-import javafx.util.Pair
 import structure.enumeration.Reason.Reason
-import structure.enumeration.{Reason, SolvingState, State}
 import structure.enumeration.SolvingState.SolvingState
 import structure.enumeration.State.State
-import structure.{ClauseWrapper, EventManager, Instance, LitScoreSet, VSIDSPropiety}
+import structure.enumeration.{Reason, SolvingState, State}
+import structure.{ClauseWrapper, EventManager, Instance, VSIDSProperty, enumeration}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -15,7 +14,7 @@ abstract class Solver {
 
   var solverState: SolvingState.Value = SolvingState.UNSOLVED
 
-  protected var eventManager: EventManager = new EventManager
+  protected val eventManager: EventManager = new EventManager
   protected var correctSolution = false
 
   var clauses: ClauseWrapper = _
@@ -23,10 +22,10 @@ abstract class Solver {
   var varValue: ArrayBuffer[State] = _
   var assignmentReason: ArrayBuffer[Reason] = _
   var vsids: Boolean = false
-  var vsidsPropiety: VSIDSPropiety = _
+  var vsidsProperty: VSIDSProperty = _
   var historySolver: HistorySolver = _
   var detectedVarBreakpoints: mutable.Queue[Int] = _
-  var varBreakpoints: mutable.HashSet[Int] = _
+  var breakpoints: mutable.HashSet[Int] = _
   protected var isCancel = false
 
   protected var numVariables: Int = -1 //per evitar recalcular
@@ -36,7 +35,7 @@ abstract class Solver {
   def init(instance: Instance, doInitialUnitProp: Boolean = true): SolvingState = {
     numVariables = instance.numVariables
     trail = new ArrayBuffer[Int](numVariables)
-    varBreakpoints = new mutable.HashSet[Int]()
+    breakpoints = new mutable.HashSet[Int]()
     detectedVarBreakpoints = new mutable.Queue[Int]()
     isCancel = false
     var solvingStateAfterUP: SolvingState = SolvingState.UNSOLVED
@@ -149,8 +148,8 @@ abstract class Solver {
     !positive && state==State.TRUE || positive && state==State.FALSE
   }
 
-  //Pot: retorna si el literal esta indefinit
-  protected def undifinedLiteral(literal : Int): Boolean ={
+  //Post: retorna cert si el literal esta indefinit
+  protected def undefinedLiteral(literal : Int): Boolean ={
     varValue(math.abs(literal)) == State.UNDEF
   }
 
@@ -215,11 +214,11 @@ abstract class Solver {
 
   def getTrailIndex(idx: Int): Int = trail(idx)
 
-  def resetEventManager() ={
+  def resetEventManager(): Unit ={
     eventManager.reset()
   }
 
-  def getStatics() = {
+  def getStatistics: (enumeration.SolvingState.Value, (Int, Int, Int), ArrayBuffer[Int]) = {
     (solverState, eventManager.getStatistics, trail.sortWith(math.abs(_) < math.abs(_)))
   }
 
@@ -251,15 +250,15 @@ abstract class Solver {
     result
   }
 
-  def setCancel(cancel : Boolean) ={
+  def setCancel(cancel : Boolean): Unit ={
     this.isCancel = cancel
   }
 
-  def getCancel() : Boolean ={
+  def getCancel: Boolean ={
     this.isCancel
   }
 
-  def getInitialClausules() : Int ={
+  def getInitialClausules: Int ={
     this.clauses.initialClauses.numClauses;
   }
 
@@ -267,43 +266,43 @@ abstract class Solver {
     vsids = c;
   }
 
-  def setVSIDSPropiety(v : VSIDSPropiety): Unit = {
-    vsidsPropiety = v
+  def setVSIDSProperty(v : VSIDSProperty): Unit = {
+    vsidsProperty = v
   }
 
   def setHistorySolver(h: HistorySolver): Unit ={
     historySolver = h
   }
 
-  def getVariablesBreakpoint: mutable.HashSet[Int] = varBreakpoints
+  def getBreakpoints: mutable.HashSet[Int] = breakpoints
 
-  def setVariablesBreakpoint(v : mutable.HashSet[Int]): Unit = varBreakpoints = v
+  def setBreakpoints(v : mutable.HashSet[Int]): Unit = breakpoints = v
 
-  def getAllVariablesBreakpoints: IndexedSeq[Pair[Int, Boolean]] = {
+  def getAllVariablesBreakpoints: IndexedSeq[(Int, Boolean)] = {
     if(numVariables != 0)
       for(i <- 1 to numVariables)
-        yield new Pair(i, if (varBreakpoints.contains(i)) true else false)
+        yield (i, breakpoints.contains(i))
     else
       IndexedSeq()
   }
 
   def addBreakpoints(variable: Int): Boolean ={
-    varBreakpoints.add(variable)
+    breakpoints.add(variable)
   }
 
   def removeBreakpoints(variable: Int): Boolean ={
-    varBreakpoints.remove(variable)
+    breakpoints.remove(variable)
   }
 
-  def isBreakpoint(variable: Int): Boolean = varBreakpoints.contains(variable)
+  def isBreakpoint(variable: Int): Boolean = breakpoints.contains(variable)
 
   def removeAllBreakpoints(): Unit = {
-    varBreakpoints = new mutable.HashSet[Int]()
+    breakpoints = new mutable.HashSet[Int]()
     detectedVarBreakpoints = new mutable.Queue[Int]()
   }
 
   def addDetectedBreakpoint(variable: Int): Unit = {
-    if(varBreakpoints.contains(variable))
+    if(breakpoints.contains(variable))
       detectedVarBreakpoints += variable
   }
 
@@ -313,7 +312,7 @@ abstract class Solver {
 
   def numDetectedBreakpoints: Int = detectedVarBreakpoints.size
 
-  def removeDetectedBreakpoints: Unit = {
+  def removeDetectedBreakpoints(): Unit = {
     detectedVarBreakpoints = new mutable.Queue[Int]()
   }
 

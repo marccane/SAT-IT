@@ -1,16 +1,11 @@
 package solver
 
-import java.util
-
 import gui.DecisionCallback
-import structure.enumeration.State
-
 import scala.collection.mutable
 
 class HistorySolver extends DecisionCallback{
 
-  var nAccionsT: Int = 0
-  //var historyTrail = _
+  var nActionsT: Int = 0
   var historyTrail: mutable.ListBuffer[Int] = _
   var historyAction:  mutable.ListBuffer[Int] = _
   var numH: Int  = 0
@@ -18,7 +13,7 @@ class HistorySolver extends DecisionCallback{
   var lastLengthTrailDecision: Int = -1
 
   def init(): Unit ={
-    nAccionsT = 0
+    nActionsT = 0
     numH = 0
     historyTrail =  mutable.ListBuffer[Int]()
     historyAction =  mutable.ListBuffer[Int]()
@@ -29,7 +24,7 @@ class HistorySolver extends DecisionCallback{
   def addAction(solverAction: Int): Unit ={
     if(!inHistory) {
       update()
-      nAccionsT = nAccionsT + 1
+      nActionsT = nActionsT + 1
       numH = numH + 1
       historyAction = historyAction.appended(solverAction)
     }
@@ -37,7 +32,7 @@ class HistorySolver extends DecisionCallback{
 
   def subtractAction(): Unit ={
     if(!inHistory) {
-      nAccionsT = nAccionsT - 1
+      nActionsT = nActionsT - 1
       numH = numH - 1
     }
 
@@ -55,16 +50,16 @@ class HistorySolver extends DecisionCallback{
   }
 
   def redo(): Unit ={
-    if(numH != nAccionsT) numH = numH + 1
+    if(numH != nActionsT) numH = numH + 1
   }
 
 
   def update(): Unit ={
-    if(numH != nAccionsT){
+    if(numH != nActionsT){
 
-      nAccionsT = numH
+      nActionsT = numH
       var newHistoryAction = mutable.ListBuffer[Int]()
-      for(i <- 0 until nAccionsT zip historyAction) newHistoryAction = newHistoryAction.appended(i._2)
+      for(i <- 0 until nActionsT zip historyAction) newHistoryAction = newHistoryAction.appended(i._2)
       historyAction = newHistoryAction
 
       if(numH == 0){

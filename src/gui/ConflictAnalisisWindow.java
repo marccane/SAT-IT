@@ -9,7 +9,6 @@ import util.Constants;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.util.ArrayList;
 
 class ConflictAnalisisWindow extends JFrame{
 
@@ -19,14 +18,12 @@ class ConflictAnalisisWindow extends JFrame{
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
 
-
         JTextPane jTextPane = new JTextPane();
         jTextPane.setEditable(false);
         JScrollPane jScrollPane = new JScrollPane(jTextPane);
         StyledDocument doc = jTextPane.getStyledDocument();
         addStylesToDocument(doc);
 
-        //StringBuilder sb = new StringBuilder();
         Set<Object> lastDecisionLevelLits = clog.lastDecisionLevelLits();
         ArrayBuffer<Set<Object>> left = clog.clausesLeft(), right = clog.clausesRight();
         ArrayBuffer<Object> resolutionLits = clog.resolutionLits();
@@ -56,7 +53,6 @@ class ConflictAnalisisWindow extends JFrame{
                     doc.insertString(doc.getLength(), "\n", doc.getStyle("endLConflict"));
                     String linia = "---";
                     for(int w = 0; w <= l1 + l2; w++) linia = linia.concat("-");
-                    //if(i != 0 && i != iters - 1) doc.insertString(doc.getLength(), "-", doc.getStyle("defaultConflict"));
                     doc.insertString(doc.getLength(), ident + linia, doc.getStyle("defaultConflict"));
                 }
                 doc.insertString(doc.getLength(), "\n", doc.getStyle("endLConflict"));
@@ -66,14 +62,9 @@ class ConflictAnalisisWindow extends JFrame{
         jPanel.add(jScrollPane);
 
         setSize((int) (Constants.getWidth() * 0.35), (int) (Constants.getHeight() * 0.4)); //amplada, altura
-        //pack();
         add(jPanel);
         setResizable(true);
         setVisible(true);
-    }
-
-    private String set2str(Set<Object> s){
-        return s.foldLeft("",(String str, Object o) -> str+" "+o);
     }
 
     private int writeClause(Set<Object> s, int resolutionLit, StyledDocument doc, Set<Object> lastLevelLits) throws javax.swing.text.BadLocationException{
@@ -98,17 +89,14 @@ class ConflictAnalisisWindow extends JFrame{
     private void addStylesToDocument(StyledDocument doc){
         //ULL! def sembla ser una referencia a una variable estatica compartida per tots els documents
         Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-        //StyleConstants.setFontSize(def,14); //default font size: 12
         doc.addStyle("default", def); //potser una altre font quedaria millor...
 
         Style defaultConflict = doc.addStyle("defaultConflict", def);
         StyleConstants.setFontSize(defaultConflict,18);
         StyleConstants.setFontFamily(defaultConflict, "Consolas");
 
-
         Style endLConflict = doc.addStyle("endLConflict", defaultConflict);
         StyleConstants.setFontSize(endLConflict,5);
-
 
         Style bold = doc.addStyle("bold", defaultConflict);
         StyleConstants.setBold(bold, true);

@@ -2,7 +2,7 @@ package util
 
 import scala.math.BigDecimal.RoundingMode
 
-object decimalPrecision {
+object DecimalPrecision {
 
   def trunc(num: Double, numD : Int): Double ={
     if(numD < 0)

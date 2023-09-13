@@ -9,7 +9,7 @@ class Clause(private var clause: ArrayBuffer[Int]) { //s'ha de poguer accedir pe
   def getClause: ArrayBuffer[Int] = clause
 
   override def toString: String = {
-    val sb = StringBuilder.newBuilder
+    val sb = new StringBuilder
     clause.foreach(x => sb.appendAll(x.toString + " ")) //millorable
     sb.result()
   }

@@ -19,5 +19,4 @@ object SolverHelper {
     !positive && state==State.TRUE || positive && state==State.FALSE
   }
 
-
 }

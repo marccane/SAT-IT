@@ -21,7 +21,7 @@ case class UnitPropEvent(var literals: ListBuffer[Int]) extends Event {
   }
 
   override def toString: String = {
-    val sb = StringBuilder.newBuilder
+    val sb = new StringBuilder
     sb.append("UP: ")
     literals.foreach(x => sb.append(x + " "))
     sb.result()

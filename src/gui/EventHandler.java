@@ -2,10 +2,8 @@ package gui;
 
 import event.BackjumpEvent;
 import event.Event;
-import javafx.util.Pair;
 import scala.Enumeration;
 import scala.Tuple3;
-import scala.collection.immutable.IndexedSeq;
 import scala.collection.mutable.ArrayBuffer;
 import solver.CDCL;
 import solver.Solver;
@@ -15,14 +13,8 @@ import structure.enumeration.SolvingState;
 import util.Constants;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static util.Constants.*;
@@ -74,7 +66,7 @@ class EventHandler {
     static void btnResolveActionHandler(Solver solver, MainGUI mainGUI){
         int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction == SOLVER_UNITPROP);
         if(res != CANCEL_DECISION) {
-            mainGUI.initButtoms();
+            mainGUI.initButtons();
             //Amb CDCL i DPLL hem de fer UP
             if (!mainGUI.isBacktracking()) mainGUI.setDecision(false);
         }
@@ -82,11 +74,7 @@ class EventHandler {
 
     static void btnEndActionHandler(Solver solver, MainGUI mainGUI){
         int res = runSolverUntil(solver,mainGUI,(int solverAction) -> solverAction != SOLVER_END);
-        if(res != CANCEL_DECISION) mainGUI.initButtoms();
-    }
-
-    static void btnStepActionHandler(Solver solver, MainGUI mainGUI){
-        runSolverUntil(solver,mainGUI,(int solverAction) -> false);
+        if(res != CANCEL_DECISION) mainGUI.initButtons();
     }
 
     private static int runSolverUntil(Solver solver, MainGUI mainGUI, ButtonConfig bc){
@@ -113,32 +101,6 @@ class EventHandler {
         return solverAction;
     }
 
-    private static void debugPrintSolverAction(int solverAction){
-        switch(solverAction){
-            case 0:
-                System.out.println("Finished");
-                break;
-            case 1:
-                System.out.println("Decision");
-                break;
-            case 2:
-                System.out.println("UnitProp");
-                break;
-            case 3:
-                System.out.println("Backjump");
-                break;
-            case 4:
-                System.out.println("Conflict");
-                break;
-            case 5:
-                System.out.println("Backtrack");
-                break;
-            default:
-                System.out.println("SWITCH DEFAULT CASE");
-                break;
-        }
-    }
-
     private static void solverShowResult(MainGUI mainGUI, Solver solver, JPanel jpanel){
         mainGUI.setEnableKeyBoard(false);
         Tuple3 tuple3 = solver.eventManager().getStatistics();
@@ -150,7 +112,6 @@ class EventHandler {
                 "Summary", JOptionPane.INFORMATION_MESSAGE);
         mainGUI.setEnableKeyBoard(true);
     }
-
 
     private static void showBreakpoints(Solver solver, MainGUI mainGUI, JPanel jpanel) {
         mainGUI.setEnableKeyBoard(false);
@@ -166,7 +127,7 @@ class EventHandler {
 
         JList jList = new JList(data);
         jList.setBackground(new JOptionPane().getBackground());
-        jList.setSelectionModel(new DisableSlect());
+        jList.setSelectionModel(new DisableSelect());
 
         JScrollPane scrollPane = new JScrollPane(jList);
         scrollPane.setBorder(createEmptyBorder());
@@ -177,7 +138,7 @@ class EventHandler {
         mainGUI.setEnableKeyBoard(true);
     }
 
-    private static class DisableSlect extends DefaultListSelectionModel{
+    private static class DisableSelect extends DefaultListSelectionModel{
         @Override
         public void setAnchorSelectionIndex(final int anchorIndex) {}
 

@@ -1,15 +1,13 @@
 package entrypoint
 
-import java.io.File
-
 import gui.{MainGUI, VsidsOptionsWindow}
 import solver.{Backtracking, CDCL, DPLL, Solver}
-import structure.{Instance, VSIDSPropiety}
+import structure.{Instance, VSIDSProperty}
 import util.Constants
 
 object jarEntrypoint {
 
-  var regexDouble: String = "(\\+|-)?[0-9]+(,[0-9]+)?"
+  val regexDouble: String = "(\\+|-)?[0-9]+(,[0-9]+)?"
 
   def main(args: Array[String]): Unit = {
     val argc = args.length
@@ -37,7 +35,7 @@ object jarEntrypoint {
     var filename: String = null
     var solver: Solver = new CDCL
     var events = false
-    val vsidsPropietyDefault: VSIDSPropiety = new VSIDSPropiety(Constants.INITIAL_SCORE_VALUE, Constants.BONUS_SCORE_VALUE,Constants.INCREMENTED_BONUS_CONSTANT)
+    val vsidsDefaultProperties: VSIDSProperty = new VSIDSProperty(Constants.INITIAL_SCORE_VALUE, Constants.BONUS_SCORE_VALUE,Constants.INCREMENTED_BONUS_CONSTANT)
 
     if(argc == 1){
       error = true
@@ -64,7 +62,7 @@ object jarEntrypoint {
             solver.setVsids(true)
 
             if(i + 1 == argc)
-              solver.setVSIDSPropiety(vsidsPropietyDefault)
+              solver.setVSIDSProperty(vsidsDefaultProperties)
             else{
               var param: List[Double] = List[Double]()
               //Mirem si ens han entrat els tres paràmetres
@@ -84,9 +82,9 @@ object jarEntrypoint {
                 }
               }
               if(!error && !errorVSIDS)
-                solver.setVSIDSPropiety(new VSIDSPropiety(param.head, param(1), param(2)))
+                solver.setVSIDSProperty(new VSIDSProperty(param.head, param(1), param(2)))
               else
-                solver.setVSIDSPropiety(vsidsPropietyDefault)
+                solver.setVSIDSProperty(vsidsDefaultProperties)
             }
           }
           else if (actualArg == "-cdcl") {
@@ -116,11 +114,11 @@ object jarEntrypoint {
       try {
         instance.readDimacs(filename)
         if(instance.numWarnings() != 0)
-          println("Warinings:\n" + instance.getWarningsText())
+          println("Warnings:\n" + instance.getWarningsText())
         if(instance.numErrors() == 0)
           solvePrint(instance, solver, events)
         else
-          println("Errors:\n" + instance.getErrossText())
+          println("Errors:\n" + instance.getErrorsText())
       }
       catch{
         case _: NumberFormatException   => Console.err.println("Error: Invalid file format. Please select a DIMACS CNF file")
@@ -158,11 +156,11 @@ object jarEntrypoint {
 
   def showHelp: Unit ={
 
-    var vsidsName : Array[String] = Array(VsidsOptionsWindow.titleInitialValue, VsidsOptionsWindow.titleIncrementValue,
+    val vsidsName: Array[String] = Array(VsidsOptionsWindow.titleInitialValue, VsidsOptionsWindow.titleIncrementValue,
       VsidsOptionsWindow.titleProductValue)
     val maxLength = vsidsName.maxBy(_.length).length
 
-    var regexInput = ": " + regexDouble + "\n"
+    val regexInput = ": " + regexDouble + "\n"
     println("Usage:")
     println("   GUI mode:  java -jar SAT-IT.jar [input-file]")
     println("   CLI mode:  java -jar SAT-IT.jar -cli <input-file> [CLI-options]")

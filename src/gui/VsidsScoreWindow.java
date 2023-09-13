@@ -1,17 +1,17 @@
 package gui;
 import solver.CDCL;
 import structure.LitScoreSet;
-import structure.litScore;
+import structure.LitScore;
 import util.Constants;
 import javax.swing.*;
 import java.util.HashMap;
 
-public class ScoreVSIDSList extends JFrame {
+class VsidsScoreWindow extends JFrame {
 
-    JList<litScore> list;
+    private JList<LitScore> list;
 
-    ScoreVSIDSList(MainGUI mainGui, CDCL cdcl, String title){
-        super("VSIDS SCORES " + title.replaceFirst(MainGUI.NAME + " " + ".* ", ""));
+    VsidsScoreWindow(MainGUI mainGui, CDCL cdcl, String title){
+        super("VSIDS SCORES " + title.replaceFirst(MainGUI.APP_NAME + " .* ", ""));
         this.setIconImages(Constants.getLogos());
         JPanel jPanel = new JPanel();
         jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.PAGE_AXIS));
@@ -26,17 +26,15 @@ public class ScoreVSIDSList extends JFrame {
             setSize(width, (int) (Constants.getHeight()*0.075)); //amplada, altura
             list = new JList<>();
         }
-
         else {
-
             //Model per guardar les variables de la llista
-            DefaultListModel<litScore> model = new DefaultListModel<>();
+            DefaultListModel<LitScore> model = new DefaultListModel<>();
             //Estructura per guardar a on esta cada element
-            HashMap<Integer, Integer> literalIndex = new HashMap<Integer, Integer>();
+            HashMap<Integer, Integer> literalIndex = new HashMap<>();
             //Obtenim el llistat de puntuacions
             litScoreSet.setDefaultListModel(model);
             int i = 0;
-            for (litScore ls : litScoreSet.getOrderedLitScoreList()) {
+            for (LitScore ls : litScoreSet.getOrderedLitScoreList()) {
                 model.addElement(ls);
                 literalIndex.put(ls.getLiteral(), i);
                 i++;
@@ -51,10 +49,10 @@ public class ScoreVSIDSList extends JFrame {
         add(jPanel);
         setResizable(true);
         setVisible(true);
-        mainGui.setViewWindows(this);
+        mainGui.setVsidsScoreWindow(this);
     }
 
-    public void setCellRenderList(CDCL cdcl){
+    void setCellRenderList(CDCL cdcl){
         list.setCellRenderer(new ScoreLitRender(cdcl));
     }
 }

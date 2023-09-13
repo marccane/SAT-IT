@@ -9,7 +9,7 @@ class ClauseWrapper {
   var numInitialClauses = 0
 
   var initialClauses = new ClauseList(ArrayBuffer[Clause]())
-  var learnt = new ClauseList(ArrayBuffer[Clause]())
+  val learnt = new ClauseList(ArrayBuffer[Clause]())
 
   def init(clausesArg: Array[Array[Int]], numVars: Int){
     numVariables = numVars

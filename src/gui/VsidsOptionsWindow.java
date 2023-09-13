@@ -1,11 +1,6 @@
 package gui;
 
-import javafx.scene.control.Spinner;
-import solver.Backtracking;
-import solver.CDCL;
-import solver.DPLL;
-import solver.Solver;
-import structure.VSIDSPropiety;
+import structure.VSIDSProperty;
 import util.Constants;
 import javax.swing.*;
 import java.awt.*;
@@ -22,12 +17,10 @@ public class VsidsOptionsWindow extends JFrame {
     public static String titleInitialValue   = "Initial Score";
     public static String titleIncrementValue = "Bonus";
     public static String titleProductValue   = "Incremented Bonus Constant";
-    public static String addStart = "Add start score";
-    public static String setStart = "Set start score";
 
-    VsidsOptionsWindow(MainGUI mainGUI, Solver solver){
+    VsidsOptionsWindow(MainGUI mainGUI){
         super("VSIDS OPTIONS");
-        add(new FrameVsids(mainGUI, solver));
+        add(new FrameVsids(mainGUI));
         this.setIconImages(Constants.getLogos());
         setResizable(false);
         pack();
@@ -37,24 +30,24 @@ public class VsidsOptionsWindow extends JFrame {
     private class FrameVsids extends JPanel implements PropertyChangeListener{
 
         //Init value
-        private double numInitialScore = 1;
-        private double numIncrementScore = 2;
-        private double numProductValueScore = 3;
+        private double numInitialScore;
+        private double numIncrementScore;
+        private double numProductValueScore;
 
         //Field
         private JFormattedTextField  numInitialScoreField;
         private JFormattedTextField  numIncrementScoreField;
         private JFormattedTextField  numProductValueField;
 
-        public FrameVsids(MainGUI mainGUI, Solver solver){
+        FrameVsids(MainGUI mainGUI){
             super(new BorderLayout());
             //Inicialitzem valors
 
-            VSIDSPropiety vsidsPropiety = mainGUI.getVsidsPropiety();
+            VSIDSProperty vsidsProperty = mainGUI.getVsidsProperty();
 
-            numInitialScore = vsidsPropiety.getStartScore().toDouble();
-            numIncrementScore = vsidsPropiety.getInitialAddScore().toDouble();
-            numProductValueScore = vsidsPropiety.getProductScore().toDouble();
+            numInitialScore = vsidsProperty.getStartScore().toDouble();
+            numIncrementScore = vsidsProperty.getInitialAddScore().toDouble();
+            numProductValueScore = vsidsProperty.getProductScore().toDouble();
 
             String[] labelsTitle = {titleInitialValue, titleIncrementValue, titleProductValue + "  "};
             //Entrada valor inicial
@@ -81,20 +74,15 @@ public class VsidsOptionsWindow extends JFrame {
             labels.add(numIncrementScoreLabel);
             labels.add(numProductValueLabel);
 
-
             initInputs(fields, labels);
-
 
             //Lay out the labels in a panel.
             JPanel labelPane = new JPanel(new GridLayout(0,1));
             for(JLabel l: labels) labelPane.add(l);
 
-
             //Layout the text fields in a panel.
             JPanel fieldPane = new JPanel(new GridLayout(0,1));
             for(JFormattedTextField f: fields) fieldPane.add(f);
-
-
 
             labelPane.add(new JLabel(""));
             fieldPane.add(new JLabel(""));
@@ -102,7 +90,7 @@ public class VsidsOptionsWindow extends JFrame {
             help.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                        new HelpVsids();
+                        new VsidsHelpWindow();
                 }
             });
             labelPane.add(help);
@@ -112,11 +100,10 @@ public class VsidsOptionsWindow extends JFrame {
                 String startScore = normalizeText(fields.get(0).getText());
                 String addScore = normalizeText(fields.get(1).getText());
                 String productScore = normalizeText(fields.get(2).getText());
-                mainGUI.setVsidsPropiety(new VSIDSPropiety(new scala.math.BigDecimal(new BigDecimal(startScore)), new scala.math.BigDecimal(new BigDecimal(addScore)), new scala.math.BigDecimal(new BigDecimal(productScore))));
+                mainGUI.setVsidsProperty(new VSIDSProperty(new scala.math.BigDecimal(new BigDecimal(startScore)), new scala.math.BigDecimal(new BigDecimal(addScore)), new scala.math.BigDecimal(new BigDecimal(productScore))));
                 dispose();
                 if (mainGUI.getSolverType() == MainGUI.SolverType.CDCL_VSIDS) mainGUI.resetGUI();
             });
-
 
             fieldPane.add(btnSave);
             setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
@@ -135,24 +122,11 @@ public class VsidsOptionsWindow extends JFrame {
             }
         }
 
-
-        public String contentHTML2Words(String w1, String w2, boolean first){
-            if(first)
-                return "<html><body>" + w1 + " / <span style='text-decoration: line-through;'>" + w2 + "</span></body></html>";
-            else
-                return "<html><body><span style='text-decoration: line-through;'>" + w1 + "</span> / " + w2 + "</body></html>";
-        }
-
-        public String textStartScore(boolean addingStartScore){
-            return contentHTML2Words(addStart, setStart, addingStartScore);
-        }
-
-        public String normalizeText(String text){
+        String normalizeText(String text){
             return text.replaceAll("\\.", "").replaceAll(",","\\.");
         }
 
-
-        public void initInputs(ArrayList<JFormattedTextField> fields, ArrayList<JLabel> labels){
+        void initInputs(ArrayList<JFormattedTextField> fields, ArrayList<JLabel> labels){
             for(int i = 0; i < fields.size(); i++){
                 JFormattedTextField field = fields.get(i);
                 JLabel label = labels.get(i);

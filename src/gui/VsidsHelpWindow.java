@@ -3,13 +3,11 @@ package gui;
 import util.Constants;
 
 import javax.swing.*;
-import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
-import java.util.ArrayList;
 
-public class HelpVsids extends JFrame {
-    HelpVsids(){
+class VsidsHelpWindow extends JFrame {
+    VsidsHelpWindow(){
         super("VSIDS HELP");
         this.setIconImages(Constants.getLogos());
         JEditorPane jEditorPane = new JEditorPane();
@@ -76,9 +74,7 @@ public class HelpVsids extends JFrame {
                 "</body>  " +
                 "</html>";
 
-
-
-        Document document = htmlEditorKit.createDefaultDocument();
+        htmlEditorKit.createDefaultDocument();
         jEditorPane.setContentType("text/html");
         jEditorPane.setText(page);
         add(jScrollPane);

@@ -1,8 +1,8 @@
 package structure
 
-class VSIDSPropiety(var startScore : BigDecimal, var addScore : BigDecimal, var productScore : BigDecimal) {
+class VSIDSProperty(var startScore : BigDecimal, var addScore : BigDecimal, var productScore : BigDecimal) {
 
-  var initialAddScore: BigDecimal = addScore
+  val initialAddScore: BigDecimal = addScore
 
   def getStartScore: BigDecimal = startScore
   def getAddScore: BigDecimal = addScore

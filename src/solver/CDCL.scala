@@ -30,7 +30,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
   def maxLengthLit() : Int ={
     if(vsids)
-      scoreLitQueue.maxLengthlit
+      scoreLitQueue.maxLengthLit
     else
       0
   }
@@ -65,7 +65,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
 
     if(vsids){
-      scoreLitQueue.initScores(instance.instance, numVariables, vsidsPropiety)
+      scoreLitQueue.initScores(instance.instance, numVariables, vsidsProperty)
       setDecisionCallback(new decisionVSIDS)
       for(l <- trail) {
         scoreLitQueue.updateAssignLiteral(l)
@@ -84,13 +84,11 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
       if (toPropagate.nonEmpty) {
         guiConflClause = unitPropagation()
-        //historySolver.addAction()
         if(guiConflClause != -1) //conflicte o UNSAT, no ho podem saber sense mirar el trail (es podria fer O(1))
           return SOLVER_CONFLICT
         else
           return SOLVER_UNITPROP
       }
-      //historySolver.addAction()
 
       if (guiConflClause != -1) { //si hi ha hagut conflicte...
         guiDecisionLevel = conflictAnalysisAndLearning(guiConflClause)
@@ -107,7 +105,6 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
         val lit = makeDecision
         if(!this.isCancel) assign(lit, Reason.DECISION)
         else {
-          //historySolver.subtractAction()
           return CANCEL_DECISION
         }
         return SOLVER_DECISION
@@ -241,7 +238,7 @@ class CDCL extends ViewableSolver with TwoWatchedLiteralSolver{
 
     if(!undefinedFound) {
       i = 0
-      var it = trail.reverseIterator
+      val it = trail.reverseIterator
       while(it.hasNext && !trobat){
         val l = it.next()
         if (clause.contains(-l) && -l != newClause.getClause(indexForcWatch)) {

@@ -9,32 +9,32 @@ class Instance {
 
   val FORMAT_LINE = "p cnf number_of_variables number_of_clauses"
   val WARNING_FORMAT_LINE_START: Int => String = (l: Int) => "Invalid start character at line " + l
-  val ERROR_CLAUSULA_BEFORE_DECLATATION: Int => String = (l: Int) => "The clauses declared at line " + l + " must be declared after the line: " + FORMAT_LINE
+  val ERROR_CLAUSE_BEFORE_DECLATATION: Int => String = (l: Int) => "The clauses declared at line " + l + " must be declared after the line: " + FORMAT_LINE
   val WARNING_LINE_DEFINITION: Int => String = (l: Int) => "The CNF DIMACS definition line " + l + " must have this form: " + FORMAT_LINE
-  val WARNING_CLAUSULA_FORMAT: Int => String = (l: Int) => "The definition of the clause at the line "+ l +" must be: one_or_more_literal 0"
-  val ERROR_NUM_CLAUSULES: (Int, Int) => String = (declarades: Int, llegides: Int) => s"The amount of read clauses, $llegides, is different from the number of clauses declared, $declarades"
+  val WARNING_CLAUSE_FORMAT: Int => String = (l: Int) => "The definition of the clause at the line "+ l +" must be: one_or_more_literal 0"
+  val ERROR_NUM_CLAUSULES: (Int, Int) => String = (declared: Int, read: Int) => s"The amount of read clauses, $read, is different from the number of clauses declared, $declared"
   val ERROR_MAX_VARIABLES: Int => String = (l: Int) => "Variables must be declared from 1 to number of declared variables, at line " + l
 
-  val ESPAI: String  = "( |\\t)"
-  val ESPAIS: String = ESPAI + "+"
-  val ESPAIS_OPT: String = ESPAI + "*"
-  val LITERAL: String = "(\\+|\\-)?" + ESPAIS_OPT + "[1-9][0-9]*"
-  val FINAL_CLAUSULA: String = "0" + ESPAIS_OPT + "$"
-  val CLAUSULA: String =  "^" + ESPAIS_OPT +  "(" + LITERAL + ESPAIS + ")" +  "+" + FINAL_CLAUSULA
-  val TOKEN_INICI_DEF_P = "p"
-  val INICI_DEF: String = "^" + ESPAIS_OPT + TOKEN_INICI_DEF_P + ESPAIS + "cnf"
+  val SPACE: String  = "( |\\t)"
+  val SPACES: String = SPACE + "+"
+  val SPACES_OPT: String = SPACE + "*"
+  val LITERAL: String = "(\\+|\\-)?" + SPACES_OPT + "[1-9][0-9]*"
+  val ENDING_CLAUSE: String = "0" + SPACES_OPT + "$"
+  val CLAUSE: String =  "^" + SPACES_OPT +  "(" + LITERAL + SPACES + ")" +  "+" + ENDING_CLAUSE
+  val TOKEN_START_DEF_P = "p"
+  val START_DEF: String = "^" + SPACES_OPT + TOKEN_START_DEF_P + SPACES + "cnf"
   val NUMBER =  "[0-9]+"
 
   var instance: Array[Array[Int]] = new Array[Array[Int]](0)
-  var definicioModel: Boolean = false
+  var modelDefinition: Boolean = false
   var numVar: Int = -1
-  var numClausules: Int = -1
+  var numClauses: Int = -1
   var errors = new ListBuffer[String]()
   var warnings = new ListBuffer[String]()
 
   def numErrors(): Int = errors.length
   def numWarnings(): Int = warnings.length
-  def getErrossText(): String = errors.foldLeft("")(_ + _ + "\n").dropRight(1)
+  def getErrorsText(): String = errors.foldLeft("")(_ + _ + "\n").dropRight(1)
   def getWarningsText(): String = warnings.foldLeft("")(_ + _ + "\n").dropRight(1)
 
   //forcem les checked exceptions perque si no java no s'entera
@@ -73,79 +73,79 @@ class Instance {
     else numVar
   }
 
-  def liniaCorrecta(str: String): Boolean ={
-    var it = str.iterator
-    var correcta = true
-    var acabat = false
-    while(!acabat && it.hasNext){
-      var char = it.next()
+  def correctLine(str: String): Boolean ={
+    val it = str.iterator
+    var correct = true
+    var finished = false
+    while(!finished && it.hasNext){
+      val char = it.next()
       if(!Character.isWhitespace(char)){
         if(char != 'p' && char != 'c' && char != '-' && char != '+' && !Character.isDigit(char)){
-          acabat   = true
-          correcta = false
+          finished   = true
+          correct = false
         } else
-          acabat = true
+          finished = true
       }
     }
-    correcta
+    correct
   }
 
-  def liniaSenseInfo(str: String): Boolean ={
-    val liniBuida       = ("^" + ESPAIS + "$").r
-    val liniaComentari  = ("^" + ESPAIS_OPT + "c.*" + "$").r
-    liniBuida.matches(str) || liniaComentari.matches(str)
+  def lineWithoutInfo(str: String): Boolean ={
+    val emptyLine       = ("^" + SPACES + "$").r
+    val commentLine  = ("^" + SPACES_OPT + "c.*" + "$").r
+    emptyLine.matches(str) || commentLine.matches(str)
   }
 
   def readDimacsAnalysis(bs: Source): Unit ={
-    val liniaDef        = (INICI_DEF +  ESPAIS + NUMBER +  ESPAIS + NUMBER + ESPAIS_OPT + "$").r
-    val liniaClausula   = CLAUSULA.r
+    val liniaDef        = (START_DEF +  SPACES + NUMBER +  SPACES + NUMBER + SPACES_OPT + "$").r
+    val clauseLine   = CLAUSE.r
     val numberDef = "[0-9]+".r
     val literalDef = LITERAL.r
-    val liniaInitDef = ("^" + ESPAIS_OPT + TOKEN_INICI_DEF_P).r
-    val patterns = List(liniaDef, liniaClausula)
+    val liniaInitDef = ("^" + SPACES_OPT + TOKEN_START_DEF_P).r
+    val patterns = List(liniaDef, clauseLine)
 
     var i = 1
-    var clausulasLlegides = 0
+    var numReadClauses = 0
     for(l <- bs.getLines()){
       if(l.length != 0) {
-        if(liniaCorrecta(l)) {
-          if(!liniaSenseInfo(l)){
-            var trobat = false
+        if(correctLine(l)) {
+          if(!lineWithoutInfo(l)){
+            var found = false
             val it = patterns.iterator
 
-            while (!trobat && it.hasNext) {
+            while (!found && it.hasNext) {
               val pattern = it.next()
               if (pattern.matches(l)) {
-                trobat = true
+                found = true
 
-                if(pattern == liniaDef && !definicioModel){
-                  val lSimpl =  numberDef.findAllIn(l.replaceAll(INICI_DEF + ESPAIS, "")).toList
+                if(pattern == liniaDef && !modelDefinition){
+                  val lSimpl =  numberDef.findAllIn(l.replaceAll(START_DEF + SPACES, "")).toList
                   if(lSimpl.size == 2) {
                     numVar = lSimpl.head.toInt
-                    numClausules = lSimpl(1).toInt
-                    definicioModel = true
-                    instance = new Array[Array[Int]](numClausules)
+                    numClauses = lSimpl(1).toInt
+                    modelDefinition = true
+                    instance = new Array[Array[Int]](numClauses)
                   }
-                } else if(pattern == liniaClausula){
-                  if(!definicioModel)
-                    errors += ERROR_CLAUSULA_BEFORE_DECLATATION(i)
+                } else if(pattern == clauseLine){
+                  if(!modelDefinition)
+                    errors += ERROR_CLAUSE_BEFORE_DECLATATION(i)
                   else{
-                    val clausula: Array[Int] = literalDef.findAllIn(l.replaceAll(FINAL_CLAUSULA, "")).map(x => x.replaceAll(ESPAIS, "").toInt).toArray
-                    if(clausulasLlegides < numClausules) instance(clausulasLlegides) = clausula
+                    val clausula: Array[Int] = literalDef.findAllIn(l.replaceAll(ENDING_CLAUSE, "")).map(x => x.replaceAll(SPACES, "").toInt).toArray
+                    if(numReadClauses < numClauses) instance(numReadClauses) = clausula
                     for(variable <- clausula){
                       if(numVar < math.abs(variable))
                         errors += ERROR_MAX_VARIABLES(i)
                     }
-                    clausulasLlegides = clausulasLlegides + 1
+                    numReadClauses = numReadClauses + 1
                   }
                 }
               }
             }
-            if (!trobat){
+            if (!found){
               if(liniaInitDef.findAllIn(l).nonEmpty)
                 warnings += WARNING_LINE_DEFINITION(i)
               else
-                warnings += WARNING_CLAUSULA_FORMAT(i)
+                warnings += WARNING_CLAUSE_FORMAT(i)
             }
           }
         }
@@ -155,8 +155,8 @@ class Instance {
       i = i + 1
     }
 
-    if(numClausules != clausulasLlegides)
-      errors += ERROR_NUM_CLAUSULES(numClausules, clausulasLlegides)
+    if(numClauses != numReadClauses)
+      errors += ERROR_NUM_CLAUSULES(numClauses, numReadClauses)
 
     if(errors.nonEmpty) {
       instance = new Array[Array[Int]](0)

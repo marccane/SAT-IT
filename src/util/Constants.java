@@ -18,14 +18,12 @@ public class Constants {
     public static final scala.math.BigDecimal INITIAL_SCORE_VALUE = new scala.math.BigDecimal(new BigDecimal("0"));
     public static final scala.math.BigDecimal BONUS_SCORE_VALUE = new scala.math.BigDecimal(new BigDecimal("2"));
     public static final scala.math.BigDecimal INCREMENTED_BONUS_CONSTANT = new scala.math.BigDecimal(new BigDecimal("1.05"));
-    public static final boolean ADD_START_VALUE = true;
 
 
     public static ArrayList<Image> getLogos(){
         ImageIcon img = new ImageIcon(Constants.class.getResource("/logo/logo2.png"));
         ArrayList<Image> images = new ArrayList<>();
         images.add(img.getImage());
-        //images.add(img2.getImage());
         return images;
     }
 
@@ -38,20 +36,16 @@ public class Constants {
         return images;
     }
 
-    public static Icon getRedBreakpoint(){
-        return null;
-    }
-
-    public static Dimension getDimensionScreen(){
+    private static Dimension getScreenDimensions(){
         return Toolkit.getDefaultToolkit().getScreenSize();
     }
 
     public static double getHeight(){
-        return getDimensionScreen().getHeight();
+        return getScreenDimensions().getHeight();
     }
 
     public static double getWidth(){
-        return getDimensionScreen().getWidth();
+        return getScreenDimensions().getWidth();
     }
 
 }

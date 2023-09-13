@@ -40,7 +40,7 @@ object testEntrypoint {
             val instance = new Instance
             instance.readDimacs(filename)
             solver.solve(instance, false)
-            val statics = solver.getStatics()
+            val statics = solver.getStatistics
             val content = s"${filename};${solver_type};${statics._1.toString};${statics._2._1};${statics._2._2};${statics._2._3};${statics._3.mkString(",")}"
 
             if (line != content) {

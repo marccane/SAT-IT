@@ -3,9 +3,7 @@ package gui;
 import event.BackjumpEvent;
 import event.BacktrackEvent;
 import event.DecisionEvent;
-import javafx.util.Pair;
 import scala.Enumeration;
-import scala.collection.immutable.List;
 import scala.collection.mutable.HashSet;
 import scala.collection.mutable.ListBuffer;
 import solver.*;
@@ -17,15 +15,12 @@ import structure.enumeration.SolvingState;
 import util.Constants;
 
 import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static gui.EventHandler.*;
@@ -34,58 +29,42 @@ import static util.Constants.*;
 
 public class MainGUI extends JFrame{
 
-    private static final String VERSION = "0.314159265";
-    public static final String NAME = "SAT-IT";
-
     public MainGUI() {
-        super(NAME);
+        super(APP_NAME);
         this.setFocusTraversalKeysEnabled(false);
         handleParametersAndInit("", null);
     }
 
-    public MainGUI(String filename){
-        super(NAME);
-        this.setTitle(nameWithFile(filename));
-        handleParametersAndInit(filename, null);
+    public MainGUI(String cnfFilePath){
+        super();
+        this.setTitle(getTitle(cnfFilePath));
+        handleParametersAndInit(cnfFilePath, null);
     }
 
-    public MainGUI(String filename, SolverType st){
-        super(NAME);
-        this.setTitle(nameWithFile(filename));
-        handleParametersAndInit(filename, st);
+    public MainGUI(String cnfFilePath, SolverType st){
+        super();
+        this.setTitle(getTitle(cnfFilePath));
+        handleParametersAndInit(cnfFilePath, st);
     }
 
-    public String nameWithFile(String path)
+    private String getTitle(String cnfFilePath)
     {
-        int i = 0;
-        String nom = "";
-        boolean trobat = false;
-        while(i < path.length() && !trobat)
-        {
-            char lletra = path.charAt(path.length() - i - 1);
-            if( lletra == File.separatorChar)
-                trobat = true;
-            else
-                nom = String.valueOf(lletra).concat(nom);
-            i++;
-        }
-        return NAME + " " + solverType + " " + nom;
+        String[] cnfFilePathSplit = cnfFilePath.split(File.separator);
+        String cnfFilename = cnfFilePathSplit[cnfFilePathSplit.length-1];
+        return APP_NAME + " " + solverType + " " + cnfFilename;
     }
 
+    //Aixo s'ha de cridar NOMES una vegada (quan inicialitzem la gui)
     private void handleParametersAndInit(String filename, SolverType solverType){
         Instance instance = new Instance();
         if(!filename.isEmpty())
             instance = loadInstanceFromFile(new File(filename));
         if(solverType!=null)
             this.solverType = solverType;
-        initGUI(instance);
-    }
 
-    //Aixo s'ha de cridar NOMES una vegada (quan inicialitzem la gui)
-    private void initGUI(Instance instance){
         initComponents();
         setEventHandlers();
-        addStylesToDocument(textPaneTrail.getStyledDocument());
+        styles.addStylesToDocument(textPaneTrail.getStyledDocument());
 
         loadInstanceGUI(instance);
     }
@@ -94,8 +73,8 @@ public class MainGUI extends JFrame{
         //Netejar GUI
         LitScoreSet litScoreSet = null;
         if(solverType == SolverType.CDCL_VSIDS && solver instanceof CDCL) litScoreSet = ((CDCL) solver).scoreLitQueue();
-        if(viewWindows != null && viewWindows.isVisible() && (historySolver == null || !historySolver.inHistory()))
-            viewWindows.dispose();
+        if(vsidsScoreWindow != null && vsidsScoreWindow.isVisible() && (historySolver == null || !historySolver.inHistory()))
+            vsidsScoreWindow.dispose();
         if(breakpointSelectWindow != null && breakpointSelectWindow.isVisible() && (historySolver == null || !historySolver.inHistory()))
             breakpointSelectWindow.dispose();
         textPaneTrail.setText("");
@@ -107,7 +86,7 @@ public class MainGUI extends JFrame{
         if(historySolver == null) historySolver = new HistorySolver();
         if(solverType == SolverType.CDCL_VSIDS && solver != null && litScoreSet != null){
             ((CDCL) solver).setScoreLitQueue(litScoreSet);
-            if(viewWindows != null) viewWindows.setCellRenderList((CDCL) solver);
+            if(vsidsScoreWindow != null) vsidsScoreWindow.setCellRenderList((CDCL) solver);
         }
         if(!historySolver.getInHistory())historySolver.init();
         if(manualDecisionOption) solver.setDecisionCallback(manualDecisionCallback);
@@ -116,24 +95,23 @@ public class MainGUI extends JFrame{
         instanceLoaded = instance.numVariables() != 0;
         TWLsolver = solver instanceof TwoWatchedLiteralSolver;
         boolean doInitialUnitProp = !(solver instanceof Backtracking);
-        vsidsPropiety.resetAddScore();
-        solver.setVSIDSPropiety(vsidsPropiety);
+        vsidsProperty.resetAddScore();
+        solver.setVSIDSProperty(vsidsProperty);
         solver.initSolverForGUI(instance, doInitialUnitProp);
-
-        if(manualDecisionOption && solverType == SolverType.CDCL_VSIDS) solver.setDecisionCallback(manualDecisionCallback);
 
         //Desactivar boto Unit Propagation si el solver es backtracking
         if(!TWLsolver)
             btnUnitProp.setEnabled(false);
         else
             btnUnitProp.setEnabled(true);
-        initButtoms();
+
+        initButtons();
         try{
             updateTrail();
             trailAddFinishText(solver.solverState(),textPaneTrail.getStyledDocument());
             updateClauses();
             updateEvents();
-            //Afeguim l'historial al solver
+            //Afegim l'historial al solver
             solver.setHistorySolver(historySolver);
         } catch(Exception e){
             JOptionPane.showMessageDialog(this,"Unknown exception: " + e.getMessage(),
@@ -142,8 +120,7 @@ public class MainGUI extends JFrame{
         }
     }
 
-    private void addText(JPanel jPanel, String title, String text){
-
+    private void addTextAreaToJPanel(JPanel jPanel, String title, String text){
         JTextArea textArea = new JTextArea(10, 50);
         textArea.setText(text);
         textArea.setEditable(false);
@@ -156,7 +133,6 @@ public class MainGUI extends JFrame{
         jPanel.add(titleLabel);
         jPanel.add(scrollPanel);
         jPanel.add(new JLabel("\n"));
-
     }
 
     private Instance loadInstanceFromFile(File file){
@@ -171,20 +147,19 @@ public class MainGUI extends JFrame{
                     "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-        if(instance.numErrors() != 0 || instance.numWarnings() != 0){
 
-            JPanel jPanel = new JPanel();
-            jPanel.setLayout(new BoxLayout(jPanel, BoxLayout.Y_AXIS));
+        if(instance.numErrors() != 0 || instance.numWarnings() != 0){
+            JPanel errorsPanel = new JPanel();
+            errorsPanel.setLayout(new BoxLayout(errorsPanel, BoxLayout.Y_AXIS));
 
             if(instance.numErrors() != 0)
-                addText(jPanel, "Errors:", instance.getErrossText());
+                addTextAreaToJPanel(errorsPanel, "Errors:", instance.getErrorsText());
             if(instance.numWarnings() != 0)
-                addText(jPanel, "Warnings:", instance.getWarningsText());
+                addTextAreaToJPanel(errorsPanel, "Warnings:", instance.getWarningsText());
 
-
-            JOptionPane.showMessageDialog(this, jPanel, instance.numErrors() != 0 ? "Errors" : "Warnings", instance.numErrors() != 0 ? JOptionPane.ERROR_MESSAGE : JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, errorsPanel, instance.numErrors() != 0 ? "Errors" : "Warnings", instance.numErrors() != 0 ? JOptionPane.ERROR_MESSAGE : JOptionPane.WARNING_MESSAGE);
         }
-        this.setTitle(nameWithFile(file.getPath()));
+        this.setTitle(getTitle(file.getPath()));
         return instance;
     }
 
@@ -220,89 +195,6 @@ public class MainGUI extends JFrame{
                     System.exit(0);
             }
         });
-    }
-
-
-    private void setDifuminitat()
-    {
-        ///propagationLiteral
-        StyleConstants.setForeground(estils.get(0), Color.lightGray);
-        //propagationLiteralLearned
-        StyleConstants.setForeground(estils.get(1), clearOrange);
-        ///decisionLiteral
-        StyleConstants.setForeground(estils.get(2), new Color(120, 177, 255));
-        ///backtrackLiteral
-        StyleConstants.setForeground(estils.get(3), new Color(255, 216, 117));
-        ///superscript
-        StyleConstants.setForeground(estils.get(4), Color.lightGray);
-
-    }
-
-    private void setClear()
-    {
-        ///propagationLiteral
-        StyleConstants.setForeground(estils.get(0), Color.black);
-        //propagationLiteralLearned
-        StyleConstants.setForeground(estils.get(1), darkOrange);
-        ///decisionLiteral
-        StyleConstants.setForeground(estils.get(2), Color.blue);
-        ///backtrackLiteral
-        StyleConstants.setForeground(estils.get(3),  darkYellow);
-        ///superscript
-        StyleConstants.setForeground(estils.get(4), Color.black);
-    }
-
-    private void setHighlight(boolean hihglight){
-        Color color = hihglight ? new Color(255, 0, 0, 30) : new Color(0,0,0, 0);
-        estilsHighlight.forEach((s) -> StyleConstants.setBackground(s, color));
-    }
-
-    private void addStylesToDocument(StyledDocument doc){
-        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-        estils = new ArrayList<>();
-        estilsHighlight = new ArrayList<>();
-        //StyleConstants.setFontFamily(def, "SansSerif");
-        doc.addStyle("default", def);
-
-        Style propLit = doc.addStyle("propagationLiteral", def);
-        estils.add(propLit);
-        estilsHighlight.add(propLit);
-
-        Style propLitLearned = doc.addStyle("propagationLiteralLearned", def);
-        StyleConstants.setForeground(propLitLearned, darkOrange);
-        StyleConstants.setBold(propLitLearned, true);
-        estils.add(propLitLearned);
-        estilsHighlight.add(propLitLearned);
-
-        Style redBold = doc.addStyle("fail", def);
-        StyleConstants.setBold(redBold, true);
-        StyleConstants.setForeground(redBold, Color.red);
-
-        Style blackBold = doc.addStyle("backtrack", redBold);
-        StyleConstants.setForeground(blackBold, darkYellow);
-        //StyleConstants.setForeground(blackBold, Color.black);
-
-        Style orangeBold = doc.addStyle("learned", redBold);
-        StyleConstants.setForeground(orangeBold, darkOrange);
-
-        Style greenBold = doc.addStyle("sat", redBold);
-        StyleConstants.setForeground(greenBold, Color.green);
-
-        Style blueBold = doc.addStyle("decisionLiteral", redBold);
-        StyleConstants.setForeground(blueBold, Color.blue);
-        estils.add(blueBold);
-        estilsHighlight.add(blueBold);
-
-        Style cyanBold = doc.addStyle("backtrackLiteral", blueBold);
-        StyleConstants.setForeground(cyanBold, darkYellow);
-        StyleConstants.setBold(cyanBold, true);
-        estils.add(cyanBold);
-        estilsHighlight.add(cyanBold);
-
-        Style superscript = doc.addStyle("superscript", def);
-        StyleConstants.setSuperscript(superscript, true);
-        estils.add(superscript);
-        setClear();
     }
 
     private void initComponents(){
@@ -436,7 +328,6 @@ public class MainGUI extends JFrame{
         //---------------------------------------------
         setSize((int) (Constants.getWidth()*0.7), (int) (Constants.getHeight()*0.85)); //amplada, altura
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        //pack();
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         add(jPanel);
         setResizable(true);
@@ -465,8 +356,7 @@ public class MainGUI extends JFrame{
         });
     }
 
-    public void initButtoms()
-    {
+    void initButtons(){
         btnDecision.setEnabled(true);
 
         if(!TWLsolver)
@@ -481,23 +371,23 @@ public class MainGUI extends JFrame{
 
     private void undoRedoFunction(boolean isUndo){
         historySolver.setInHistory(true);
-        HashSet<Object> breakpoints = solver.getVariablesBreakpoint();
+        HashSet<Object> breakpoints = solver.getBreakpoints();
         if(isUndo) historySolver.undo();
         else historySolver.redo();
         loadInstanceGUI(lastInstance);
         solver.setDecisionCallback(historySolver);
-        solver.setVariablesBreakpoint(breakpoints);
+        solver.setBreakpoints(breakpoints);
         ListBuffer<Object> t = historySolver.getHistoryTrailClone();
         int[] actions = historySolver.getHistorAction();
         int last = -1;
         int actual = -1;
         for(int i = 0; i < historySolver.getNumH(); i++){
-            int solverAction = solverStep();
+            solverStep();
             last = actual;
             actual = actions[i];
         }
         updateGUI();
-        updateButtoms(last, actual);
+        updateButtons(last, actual);
         historySolver.setHistoryTrail(t);
         historySolver.setInHistory(false);
         solver.resetDecisionCallback();
@@ -508,11 +398,10 @@ public class MainGUI extends JFrame{
 
     private void initJMenuBar(){
         JMenuBar jMenuBar = new JMenuBar();
-
         JMenu fileMenu = new JMenu("File");
 
-            JMenuItem undonMenuItem = new JMenuItem("<html><body>Undo&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: gray;\">(Ctrl+Z or &#8592;)</span></body></html>");
-            undonMenuItem.addActionListener(stub -> undoRedoFunction(UNDO));
+            JMenuItem undoMenuItem = new JMenuItem("<html><body>Undo&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: gray;\">(Ctrl+Z or &#8592;)</span></body></html>");
+            undoMenuItem.addActionListener(stub -> undoRedoFunction(UNDO));
 
             JMenuItem redoMenuItem  = new JMenuItem("<html><body>Redo&nbsp;&nbsp;&nbsp;&nbsp;<span style = \"color: gray;\">(Ctrl+Y or &#8594;)</span></body></html>");
             redoMenuItem.addActionListener(stub ->{
@@ -522,7 +411,6 @@ public class MainGUI extends JFrame{
             JMenuItem openMenuItem = new JMenuItem("Open");
             openMenuItem.addActionListener(stub -> {
                 JFileChooser jfc = new JFileChooser(System.getProperty("user.dir"));
-                //JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
 
                 jfc.setDialogTitle("Select an instance");
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("DIMACS CNF (.cnf, .dimacs)", "cnf", "dimacs");
@@ -561,7 +449,7 @@ public class MainGUI extends JFrame{
 
         fileMenu.add(openMenuItem);
         fileMenu.add(redoMenuItem);
-        fileMenu.add(undonMenuItem);
+        fileMenu.add(undoMenuItem);
         fileMenu.add(resetMenuItem);
         fileMenu.addSeparator();
         fileMenu.add(exitMenuItem);
@@ -573,10 +461,9 @@ public class MainGUI extends JFrame{
 
             manualDecisionsCheckBoxMenuItem = new JCheckBoxMenuItem("<html><body>Manual Decisions&nbsp;&nbsp;&nbsp;&nbsp;<span style=\"color: gray;\">(M)</span></body></html>", manualDecisionOption);
             manualDecisionsCheckBoxMenuItem.addItemListener(evt -> manualFunction());
+
             JMenuItem vsidsParameters = new JMenuItem("VSIDS parameters");
-            vsidsParameters.addActionListener(evt -> new VsidsOptionsWindow(this,solver));
-
-
+            vsidsParameters.addActionListener(evt -> new VsidsOptionsWindow(this));
 
             JCheckBoxMenuItem focusOnConflictClauseCheckBoxMenuItem = new JCheckBoxMenuItem("Auto-focus on conflict clause", autoFocusOnConflictOption);
             focusOnConflictClauseCheckBoxMenuItem.addItemListener(evt -> {
@@ -609,10 +496,9 @@ public class MainGUI extends JFrame{
                     "About", JOptionPane.INFORMATION_MESSAGE));
             helpMenu.add(aboutMenuItem);
 
-
         JMenu viewMenu = new JMenu("View");
         viewScoreList = new JMenuItem("Score List");
-        viewScoreList.addActionListener(stub -> new ScoreVSIDSList(this, (CDCL) solver, getTitle()));
+        viewScoreList.addActionListener(stub -> new VsidsScoreWindow(this, (CDCL) solver, getTitle()));
 
         MainGUI mainGUI = this;
         class MouseAdapterBreakPoint extends MouseAdapter{
@@ -647,7 +533,7 @@ public class MainGUI extends JFrame{
         int literal = 0, automaticResponse;
         if(this.solverType == SolverType.CDCL_VSIDS) automaticResponse =  this.solver.initialMakeDecisionVSIDS();
         else  automaticResponse = this.solver.initialMakeDecision(); //no tinc ni la mes remota idea de perque s'ha de posar el this...
-        updateClauses(); //per tenir les clausules act. al moment de decidir. testejar
+        updateClauses(); //per tenir les clausules act. al moment de decidir
         boolean decisionMade = false;
         while(!decisionMade){
             boolean error = false;
@@ -659,7 +545,6 @@ public class MainGUI extends JFrame{
                 this.solver.setCancel(true);
                 setEnableKeyBoard(true);
                 return CANCEL_DECISION;
-                //decisionMade = true;
             } else {
                 response = response.trim();
                 try {
@@ -702,20 +587,20 @@ public class MainGUI extends JFrame{
             }
             else if(solverAction==SOLVER_BACKJUMP){
                 doc.insertString(doc.getLength(), "LEARNED "+(solver.clauses().getNumClauses()-1)+"\n\n", doc.getStyle("learned"));
-                setDifuminitat();
+                styles.setBlurredStyle();
                 //escriure trail despres el backjump
                 for(int i=0; i<actualTrailLength - 1; i++)
                     trailAddLiteral(i);
-                setClear();
+                styles.setClearStyle();
                 trailAddLiteral(actualTrailLength- 1);
             }
             else if(solverAction==SOLVER_BACKTRACK){
                 doc.insertString(doc.getLength(), "BACKTRACK\n\n", doc.getStyle("backtrack"));
-                setDifuminitat();
+                styles.setBlurredStyle();
                 //escriure trail despres el backtrack
                 for(int i=0; i<actualTrailLength - 1; i++)
                     trailAddLiteral(i);
-                setClear();
+                styles.setClearStyle();
                 trailAddLiteral(actualTrailLength - 1);
             }
             else if(solverAction==SOLVER_END){
@@ -753,12 +638,10 @@ public class MainGUI extends JFrame{
     }
 
     private void trailAddLiteral(int litIdx) throws javax.swing.text.BadLocationException{
-    //} void stub2(int litIdx) throws javax.swing.text.BadLocationException{
         int lit = solver.getTrailIndex(litIdx);
         StyledDocument doc = textPaneTrail.getStyledDocument();
         boolean breakpoint = solver.isBreakpoint(Math.abs(lit));
-        ArrayList<Pair<Boolean, Color>> boldsColors = new ArrayList<>(estils.size());
-        setHighlight(breakpoint);
+        styles.setHighlightStyle(breakpoint);
 
         if(TWLsolver) { //cdcl i dpll
             TwoWatchedLiteralSolver wlSolver = (TwoWatchedLiteralSolver) solver;
@@ -794,7 +677,7 @@ public class MainGUI extends JFrame{
             }
             doc.insertString(doc.getLength(), " ", doc.getStyle("default"));
         }
-        setHighlight(false);
+        styles.setHighlightStyle(false);
     }
 
     void updateGUI(){
@@ -863,7 +746,7 @@ public class MainGUI extends JFrame{
         else return null;
     }
 
-    public SolverType getSolverType(){
+    SolverType getSolverType(){
         return solverType;
     }
 
@@ -878,24 +761,23 @@ public class MainGUI extends JFrame{
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                           boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                //this.setFont(this.getFont().deriveFont(14f).deriveFont(Font.PLAIN));
 
                 Event event = (Event) value;
                 setText(event.toString());
 
                 if(event instanceof BacktrackEvent)
-                    setForeground(darkYellow);
+                    setForeground(Styles.darkYellow);
                 else if(event instanceof DecisionEvent)
                     setForeground(Color.blue);
                 else if(event instanceof BackjumpEvent)
-                    setForeground(purple);
+                    setForeground(Styles.purple);
 
                 return this;
             }
         };
     }
 
-    public void failAction(int solverAction)
+    void failAction(int solverAction)
     {
         if(solverAction == SOLVER_CONFLICT)
         {
@@ -904,10 +786,10 @@ public class MainGUI extends JFrame{
             btnConflict.setEnabled(false);
             btnResolve.setEnabled(true);
         }
-        else initButtoms();
+        else initButtons();
     }
 
-    public void updateButtoms(int last, int actual){
+    private void updateButtons(int last, int actual){
         boolean decision = true;
         boolean unitProp = true;
         boolean conflict = true;
@@ -933,7 +815,7 @@ public class MainGUI extends JFrame{
         btnEnd.setEnabled(true);
     }
 
-    public void manualFunction(){
+    private void manualFunction(){
         if(!manualDecisionOption){
             manualDecisionOption = true;
             solver.setDecisionCallback(manualDecisionCallback);
@@ -943,12 +825,12 @@ public class MainGUI extends JFrame{
         }
     }
 
-    public void setDecision(boolean estat)
+    void setDecision(boolean enabled)
     {
-        btnDecision.setEnabled(estat);
+        btnDecision.setEnabled(enabled);
     }
 
-    public void setBreakpointSelectWindow(BreakpointSelectWindow breakpointSelectWindow){
+    void setBreakpointSelectWindow(BreakpointSelectWindow breakpointSelectWindow){
         this.breakpointSelectWindow = breakpointSelectWindow;
     }
 
@@ -957,49 +839,37 @@ public class MainGUI extends JFrame{
         return !TWLsolver;
     }
 
-    public void changeSolverTitle()
+    void changeSolverTitle()
     {
         String title = this.getTitle();
-        title = title.replaceFirst(NAME + " ", "");
+        title = title.replaceFirst(APP_NAME + " ", "");
         title = title.replaceFirst(".* ", "");
-        this.setTitle(NAME + " " + solverType + " " + title);
+        this.setTitle(APP_NAME + " " + solverType + " " + title);
     }
 
-    public void setEnableKeyBoard(boolean enable) {
+    void setEnableKeyBoard(boolean enable) {
         enableKeyboard = enable;
     }
 
-    public void setViewScoreListEnable(boolean enable){
+    void setViewScoreListEnable(boolean enable){
         viewScoreList.setEnabled(enable);
     }
 
-    public void setViewWindows(ScoreVSIDSList vW){
-        this.viewWindows = vW;
+    void setVsidsScoreWindow(VsidsScoreWindow vW){
+        this.vsidsScoreWindow = vW;
     }
 
-    public VSIDSPropiety getVsidsPropiety(){
-        return this.vsidsPropiety;
+    VSIDSProperty getVsidsProperty(){
+        return this.vsidsProperty;
     }
 
-    public void setVsidsPropiety(VSIDSPropiety vP){
-        this.vsidsPropiety = vP;
+    void setVsidsProperty(VSIDSProperty vP){
+        this.vsidsProperty = vP;
     }
 
     public enum SolverType{
         Backtracking, DPLL, CDCL, CDCL_VSIDS
     }
-
-    //Guarda les dades per poder retrocedir a un estat anterior del solver (unused)
-    private class TimeTravelData{
-        ClauseWrapper clauseWrapper;
-        int numEvents;
-        int specIndex;
-    }
-
-    //Atributs pel timetravel (per fer una copia parcial del trail, unused)
-    //StyledDocument testDoc;
-    //boolean testCopiaFeta = false;
-    //int specCount;
 
     //Attributs d'Swing
     private JPanel jPanel;
@@ -1011,18 +881,15 @@ public class MainGUI extends JFrame{
     private JButton btnConflict;
     private JButton btnEnd;
     private JButton btnResolve;
+
     private JMenuItem viewScoreList;
-    private ScoreVSIDSList viewWindows;
-    private BreakpointSelectWindow breakpointSelectWindow;
-    private ArrayList<Style> estils;
-    private ArrayList<Style> estilsHighlight;
     private JCheckBoxMenuItem manualDecisionsCheckBoxMenuItem;
 
     //Atributs del solver
     private Instance lastInstance;
     private ViewableSolver solver;
     private SolverType solverType = SolverType.CDCL;
-    private VSIDSPropiety vsidsPropiety = new VSIDSPropiety(Constants.INITIAL_SCORE_VALUE, Constants.BONUS_SCORE_VALUE,Constants.INCREMENTED_BONUS_CONSTANT);
+    private VSIDSProperty vsidsProperty = new VSIDSProperty(Constants.INITIAL_SCORE_VALUE, Constants.BONUS_SCORE_VALUE,Constants.INCREMENTED_BONUS_CONSTANT);
     private HistorySolver historySolver;
 
     //Atributs auxiliars
@@ -1030,20 +897,22 @@ public class MainGUI extends JFrame{
     private boolean TWLsolver;
     private int oldTrailLength;
     private boolean focusOnLearnedClauseDelay = false;
-    private static final boolean UNDO = true;
-    private static final boolean REDO = false;
     private boolean enableKeyboard = true;
+    private Styles styles = new Styles();
+
+    private VsidsScoreWindow vsidsScoreWindow;
+    private BreakpointSelectWindow breakpointSelectWindow;
 
     //User-toggleable options
     private boolean manualDecisionOption = false;
     private boolean autoFocusOnConflictOption = true;
     private boolean autoFocusOnLearnedOption = true;
 
+    static final String APP_NAME = "SAT-IT";
+    private static final String VERSION = "0.314159265";
     static final String confirmResetMessage = "You will lose the solving progress. Are you sure?";
-    static final Color darkOrange = new Color(255,128,0);
-    static final Color clearOrange = new Color(255,200,145);
-    static final Color darkYellow = new Color(255, 183, 0);
-    static final Color purple = new Color(128,0,128);
+    private static final boolean UNDO = true;
+    private static final boolean REDO = false;
 
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(MainGUI::new);
