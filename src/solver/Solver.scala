@@ -50,11 +50,9 @@ abstract class Solver {
 
     clauses = new ClauseWrapper()
     if(doInitialUnitProp) {
-      //println("clausules inicials = " + instance.instance.length)
       val unitPropResult = initialUnitProp(instance)
       solvingStateAfterUP = unitPropResult._1
       val unitPropClauses = unitPropResult._2.map(_.toArray).toArray
-      //println("clausules despres de UP = " + unitPropClauses.length)
       clauses.init(unitPropClauses, numVariables)
     }
     else{
@@ -258,7 +256,7 @@ abstract class Solver {
     this.isCancel
   }
 
-  def getInitialClausules: Int ={
+  def getInitialClauses: Int ={
     this.clauses.initialClauses.numClauses;
   }
 

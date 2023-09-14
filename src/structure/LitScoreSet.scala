@@ -119,7 +119,7 @@ class LitScoreSet {
 
 
 
-  //Update new Clausules
+  //Update new clauses
   def addNewClausule(newClause: Clause) : Unit = {
 
     var maxBound = false

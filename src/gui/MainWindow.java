@@ -228,7 +228,6 @@ public class MainWindow extends JFrame{
         textPaneTrail = new JTextPane();
         textPaneTrail.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textPaneTrail);
-        //cp.add(scrollPane, BorderLayout.CENTER);
         jPanel.add(scrollPane, c);
 
         //2
@@ -317,7 +316,6 @@ public class MainWindow extends JFrame{
         c.gridy = 1;
         c.gridwidth = 2;
         c.ipadx = 250;
-        //c.ipady = 100;
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
         c.weighty = 0.5;
@@ -656,7 +654,7 @@ public class MainWindow extends JFrame{
             } else if (propagator < 0) { //decisio
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("decisionLiteral"));
                 doc.insertString(doc.getLength(), "d", doc.getStyle("superscript"));
-            } else if(propagator >= solver.getInitialClausules()){ //unitprop
+            } else if(propagator >= solver.getInitialClauses()){ //unitprop
                 doc.insertString(doc.getLength(), Integer.toString(lit), doc.getStyle("propagationLiteralLearned"));
                 doc.insertString(doc.getLength(), propagator.toString(), doc.getStyle("superscript"));
             }else { //unitprop

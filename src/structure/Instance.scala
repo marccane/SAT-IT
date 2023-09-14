@@ -12,7 +12,7 @@ class Instance {
   val ERROR_CLAUSE_BEFORE_DECLATATION: Int => String = (l: Int) => "The clauses declared at line " + l + " must be declared after the line: " + FORMAT_LINE
   val WARNING_LINE_DEFINITION: Int => String = (l: Int) => "The CNF DIMACS definition line " + l + " must have this form: " + FORMAT_LINE
   val WARNING_CLAUSE_FORMAT: Int => String = (l: Int) => "The definition of the clause at the line "+ l +" must be: one_or_more_literal 0"
-  val ERROR_NUM_CLAUSULES: (Int, Int) => String = (declared: Int, read: Int) => s"The amount of read clauses, $read, is different from the number of clauses declared, $declared"
+  val ERROR_NUM_CLAUSES: (Int, Int) => String = (declared: Int, read: Int) => s"The amount of read clauses, $read, is different from the number of clauses declared, $declared"
   val ERROR_MAX_VARIABLES: Int => String = (l: Int) => "Variables must be declared from 1 to number of declared variables, at line " + l
 
   val SPACE: String  = "( |\\t)"
@@ -156,7 +156,7 @@ class Instance {
     }
 
     if(numClauses != numReadClauses)
-      errors += ERROR_NUM_CLAUSULES(numClauses, numReadClauses)
+      errors += ERROR_NUM_CLAUSES(numClauses, numReadClauses)
 
     if(errors.nonEmpty) {
       instance = new Array[Array[Int]](0)
